@@ -1,0 +1,7 @@
+.chrome-headless/
+.local-server.err.log
+.local-server.out.log
+.local-server.pid
+.local-server.runtime.log
+.server-err.log
+.server-out.log

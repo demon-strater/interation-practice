@@ -1,0 +1,183 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formula Relics TCG</title>
+  <link rel="stylesheet" href="style.css?v=20260319-2">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div class="hero-copy">
+        <h1 class="glitch" data-text="FORMULA RELICS">FORMULA RELICS</h1>
+        <p class="hero-subtitle">Mathematical Archives & Collections</p>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-card">
+          <span>Collected</span>
+          <strong id="ownedCount">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Unique</span>
+          <strong id="uniqueCount">0</strong>
+        </div>
+        <div class="stat-card legendary-stat">
+          <span>Legendary</span>
+          <strong id="legendaryCount">0</strong>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-grid">
+      <section class="panel pack-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">PACK OPENING</h2>
+          <button id="newPackButton" class="action-button glow-button" type="button">New Pack</button>
+        </div>
+
+        <div class="pack-probabilities" id="probabilityTable"></div>
+
+        <div class="opening-stage">
+          <div class="opening-header">
+            <h3 id="openingTitle" class="neon-text">SEALED BOOSTER PACK</h3>
+            <p id="revealMessage" class="sub-text">Click or drag the wrapper to tear the pack open.</p>
+          </div>
+          <div id="cardStage" class="card-stage">
+            <div class="stage-light"></div>
+            <button id="ripPackButton" class="booster-pack" type="button" aria-label="Rip the booster pack">
+              <span class="pack-art" aria-hidden="true"></span>
+              <span class="foil-shine"></span>
+              <span class="foil-tear-line"></span>
+              <span class="pack-top-label">Museum Edition</span>
+              <span class="pack-center-glyph"></span>
+              <span class="pack-logo">FORMULA<br>RELICS</span>
+              <span class="pack-bottom-copy">Drag or click to rip</span>
+            </button>
+            <div id="spreadFan" class="spread-fan"></div>
+          </div>
+          <div class="rip-instructions" id="ripInstructions"></div>
+        </div>
+      </section>
+
+      <section class="panel inventory-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">MY BINDER</h2>
+          <div class="inventory-controls">
+            <select id="inventorySort" class="glass-select">
+              <option value="rarity">Rarity</option>
+              <option value="name">Name</option>
+              <option value="date">Latest</option>
+            </select>
+          </div>
+        </div>
+        <div id="inventoryGrid" class="inventory-grid"></div>
+      </section>
+
+      <section class="panel catalog-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">MASTER CATALOG</h2>
+          <div class="legend-row">
+            <span class="rarity-chip bronze">Bronze</span>
+            <span class="rarity-chip silver">Silver</span>
+            <span class="rarity-chip gold">Gold</span>
+            <span class="rarity-chip platinum">Platinum</span>
+            <span class="rarity-chip legendary">Legendary</span>
+          </div>
+        </div>
+        <div id="catalogGrid" class="catalog-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="cardModal" class="card-modal hidden" aria-hidden="true">
+    <div class="card-modal-backdrop" data-close-modal="true"></div>
+    <div class="card-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button id="closeModalButton" class="card-modal-close" type="button" aria-label="Close details">×</button>
+      <div class="card-modal-layout">
+        <div class="card-modal-visual">
+          <div id="modalCard3d" class="modal-card-3d"></div>
+        </div>
+        <div class="card-modal-info">
+          <p class="modal-kicker">Relic Status</p>
+          <h3 id="modalTitle"></h3>
+          <div class="modal-badges">
+            <span id="modalRarity" class="rarity-chip"></span>
+            <span id="modalScore" class="modal-score"></span>
+          </div>
+          <div class="modal-meta-grid">
+            <div>
+              <span class="meta-label">Discoverer</span>
+              <strong id="modalDiscoverer"></strong>
+            </div>
+            <div>
+              <span class="meta-label">Year</span>
+              <strong id="modalYear"></strong>
+            </div>
+            <div>
+              <span class="meta-label">Formula</span>
+              <strong id="modalFormula" class="mono"></strong>
+            </div>
+          </div>
+          <div class="modal-section">
+            <h4>Origin</h4>
+            <p id="modalOrigin"></p>
+          </div>
+          <div class="modal-section">
+            <h4>Core Idea</h4>
+            <p id="modalCore"></p>
+          </div>
+          <div class="modal-section">
+            <h4>4 Metrics</h4>
+            <div id="modalStats" class="modal-stats"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <template id="cardTemplate">
+    <article class="tcg-card" tabindex="0" role="button" aria-label="Flip card">
+      <div class="card-inner">
+        <div class="card-face card-face-front">
+          <div class="card-foil"></div>
+          <div class="card-frame">
+            <div class="card-header">
+              <span class="card-rarity-code"></span>
+              <h3 class="card-name"></h3>
+            </div>
+            
+            <div class="card-formula-bar">
+              <p class="card-formula-display"></p>
+            </div>
+
+            <div class="card-art-window">
+              <div class="card-art-image"></div>
+              <div class="art-overlay"></div>
+              <div class="formula-sigil-anim"></div>
+              <div class="card-meta-overlay">
+                <span class="card-discoverer"></span>
+                <span class="card-year"></span>
+              </div>
+            </div>
+
+            <div class="card-stat-grid">
+              <div class="card-stat-row"></div>
+              <div class="card-flavor"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-face card-face-back" aria-hidden="true">
+          <div class="card-back-image"></div>
+          <div class="card-back-glow"></div>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <script src="script.js?v=20260319-2"></script>
+</body>
+</html>
+
