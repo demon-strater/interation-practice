@@ -3,53 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Formula Relics TCG</title>
-  <link rel="stylesheet" href="style.css?v=20260319-2">
+  <title>마테마티카</title>
+  <link rel="stylesheet" href="style.css?v=20260321-6">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="app-shell">
     <header class="hero">
       <div class="hero-copy">
-        <h1 class="glitch" data-text="FORMULA RELICS">FORMULA RELICS</h1>
-        <p class="hero-subtitle">Mathematical Archives & Collections</p>
-      </div>
-      <div class="hero-stats">
-        <div class="stat-card">
-          <span>Collected</span>
-          <strong id="ownedCount">0</strong>
-        </div>
-        <div class="stat-card">
-          <span>Unique</span>
-          <strong id="uniqueCount">0</strong>
-        </div>
-        <div class="stat-card legendary-stat">
-          <span>Legendary</span>
-          <strong id="legendaryCount">0</strong>
-        </div>
+        <h1 class="glitch" data-text="마테마티카">마테마티카</h1>
+        <p class="hero-subtitle">MATHEMATICAL ARCHIVES & COLLECTIONS</p>
+        <nav class="page-nav" aria-label="Section navigation">
+          <button class="page-tab is-active" type="button" data-page-target="opening" aria-pressed="true">Card Opening</button>
+          <button class="page-tab" type="button" data-page-target="catalog">Master Catalog</button>
+        </nav>
       </div>
     </header>
 
-    <main class="main-grid">
-      <section class="panel pack-panel">
+    <main class="page-stack" id="pageStack" data-page="opening">
+      <div class="page-track" id="pageTrack">
+      <section class="page-view is-active" data-page="opening" aria-label="Pack Opening page">
+        <section class="panel pack-panel">
         <div class="panel-header">
           <h2 class="panel-title">PACK OPENING</h2>
           <button id="newPackButton" class="action-button glow-button" type="button">New Pack</button>
         </div>
 
-        <div class="pack-probabilities" id="probabilityTable"></div>
-
         <div class="opening-stage">
           <div class="opening-header">
-            <h3 id="openingTitle" class="neon-text">SEALED BOOSTER PACK</h3>
-            <p id="revealMessage" class="sub-text">Click or drag the wrapper to tear the pack open.</p>
+            <h3 id="openingTitle" class="neon-text"></h3>
+            <p id="revealMessage" class="sub-text"></p>
           </div>
           <div id="cardStage" class="card-stage">
             <div class="stage-light"></div>
+            <div class="stage-ring"></div>
+            <div class="stage-veil"></div>
             <button id="ripPackButton" class="booster-pack" type="button" aria-label="Rip the booster pack">
-              <span class="pack-art" aria-hidden="true"></span>
-              <span class="foil-shine"></span>
-              <span class="foil-tear-line"></span>
+              <span class="pack-contents" aria-hidden="true">
+                <span class="pack-card pack-card-center"></span>
+              </span>
+              <span class="pack-body" aria-hidden="true"></span>
+              <span class="pack-top" aria-hidden="true"></span>
               <span class="pack-top-label">Museum Edition</span>
               <span class="pack-center-glyph"></span>
               <span class="pack-logo">FORMULA<br>RELICS</span>
@@ -57,27 +51,38 @@
             </button>
             <div id="spreadFan" class="spread-fan"></div>
           </div>
-          <div class="rip-instructions" id="ripInstructions"></div>
+          <div class="rip-instructions hidden" id="ripInstructions"></div>
         </div>
+        </section>
       </section>
 
-      <section class="panel inventory-panel">
-        <div class="panel-header">
-          <h2 class="panel-title">MY BINDER</h2>
-          <div class="inventory-controls">
-            <select id="inventorySort" class="glass-select">
-              <option value="rarity">Rarity</option>
-              <option value="name">Name</option>
-              <option value="date">Latest</option>
-            </select>
+      <section class="page-view" data-page="catalog" aria-label="Master Catalog page">
+        <section class="rarity-summary" aria-label="Owned cards by rarity">
+          <div class="rarity-summary-card bronze">
+            <span>Bronze</span>
+            <strong id="bronzeCount">0</strong>
           </div>
-        </div>
-        <div id="inventoryGrid" class="inventory-grid"></div>
-      </section>
+          <div class="rarity-summary-card silver">
+            <span>Silver</span>
+            <strong id="silverCount">0</strong>
+          </div>
+          <div class="rarity-summary-card gold">
+            <span>Gold</span>
+            <strong id="goldCount">0</strong>
+          </div>
+          <div class="rarity-summary-card platinum">
+            <span>Platinum</span>
+            <strong id="platinumCount">0</strong>
+          </div>
+          <div class="rarity-summary-card legendary">
+            <span>Legendary</span>
+            <strong id="summaryLegendaryCount">0</strong>
+          </div>
+        </section>
 
-      <section class="panel catalog-panel">
+        <section class="panel catalog-panel">
         <div class="panel-header">
-          <h2 class="panel-title">MASTER CATALOG</h2>
+          <h2 class="panel-title">COLLECTED CARDS</h2>
           <div class="legend-row">
             <span class="rarity-chip bronze">Bronze</span>
             <span class="rarity-chip silver">Silver</span>
@@ -87,7 +92,10 @@
           </div>
         </div>
         <div id="catalogGrid" class="catalog-grid"></div>
+        <p id="catalogEmptyState" class="empty-state hidden">아직 뽑은 카드가 없습니다. Pack Opening에서 먼저 카드를 열어보세요.</p>
+        </section>
       </section>
+      </div>
     </main>
   </div>
 
@@ -177,7 +185,7 @@
     </article>
   </template>
 
-  <script src="script.js?v=20260319-2"></script>
+  <script src="script.js?v=20260321-6"></script>
 </body>
 </html>
 

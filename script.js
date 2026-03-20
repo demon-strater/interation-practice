@@ -26,11 +26,11 @@ const RARITY_THRESHOLDS = [
 ];
 
 const RARITY_PROBABILITIES = [
-    { rarity: "Bronze", chance: 0.60 },
-    { rarity: "Silver", chance: 0.25 },
-    { rarity: "Gold", chance: 0.10 },
-    { rarity: "Platinum", chance: 0.04 },
-    { rarity: "Legendary", chance: 0.01 },
+    { rarity: "Bronze", chance: 0.72 },
+    { rarity: "Silver", chance: 0.18 },
+    { rarity: "Gold", chance: 0.07 },
+    { rarity: "Platinum", chance: 0.025 },
+    { rarity: "Legendary", chance: 0.005 },
 ];
 
 const METRIC_WEIGHTS = {
@@ -48,9 +48,23 @@ const FLAVOR_BY_RARITY = {
     Legendary: "A legendary card treated as an icon of mathematics itself.",
 };
 
-const DEFAULT_CARD_ART = "image/card1f.png";
-const DEFAULT_CARD_BACK = "image/card1f.png";
-const CARD_IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "webp", "avif"];
+const DEFAULT_CARD_ART = "";
+const DEFAULT_CARD_BACK = `${GITHUB_RAW_BASE}/image/card1b.png`;
+const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/demon-strater/interation-practice/main";
+const LEGENDARY_CARD_BACK = `${GITHUB_RAW_BASE}/image/card1b.png`;
+const CARD_IMAGE_OVERRIDES = {
+    pick_theorem: {
+        front: `${GITHUB_RAW_BASE}/image/card1f.png`,
+        back: LEGENDARY_CARD_BACK,
+    },
+    law_of_cosines: { front: `${GITHUB_RAW_BASE}/image/card2f.png` },
+    euler_identity: {
+        front: `${GITHUB_RAW_BASE}/image/card3f.png`,
+        back: LEGENDARY_CARD_BACK,
+    },
+    black_scholes: { front: `${GITHUB_RAW_BASE}/image/caed4f.png` },
+    wave_equation: { front: `${GITHUB_RAW_BASE}/image/card5f.png` },
+};
 const DETAIL_COPY = {
     euler_identity: {
         origin:
@@ -62,7 +76,8 @@ const DETAIL_COPY = {
     },
 };
 
-const STORAGE_KEY = "formula-relics-tcg-inventory-v3";
+const STORAGE_KEY = "formula-relics-tcg-inventory-v5";
+const CATALOG_ORDER_KEY = "formula-relics-tcg-catalog-order-v1";
 let memoryInventoryStore = null;
 
 const FORMULA_LIBRARY = [
@@ -226,14 +241,95 @@ const FORMULA_LIBRARY = [
         year: 1718,
         metrics: { authority: 89, influence: 74, history: 70, value: 76 },
     },
+    {
+        id: "eulers_formula",
+        name: "Euler's Formula",
+        latex: "e^{ix} = \\cos x + i\\sin x",
+        discoverer: "Leonhard Euler",
+        year: 1748,
+        metrics: { authority: 97, influence: 95, history: 91, value: 93 },
+    },
+    {
+        id: "cauchy_schwarz",
+        name: "Cauchy-Schwarz Inequality",
+        latex: "|\\langle u,v\\rangle| \\leq \\|u\\|\\|v\\|",
+        discoverer: "Cauchy & Schwarz",
+        year: 1821,
+        metrics: { authority: 93, influence: 89, history: 82, value: 77 },
+    },
+    {
+        id: "stokes_theorem",
+        name: "Stokes' Theorem",
+        latex: "\\int_S (\\nabla \\times F)\\cdot dS = \\oint_{\\partial S} F\\cdot dr",
+        discoverer: "George Stokes",
+        year: 1854,
+        metrics: { authority: 94, influence: 87, history: 81, value: 76 },
+    },
+    {
+        id: "maxwell_equations",
+        name: "Maxwell's Equations",
+        latex: "\\nabla\\cdot E=\\rho/\\epsilon_0,\\; \\nabla\\cdot B=0",
+        discoverer: "James Clerk Maxwell",
+        year: 1865,
+        metrics: { authority: 96, influence: 99, history: 90, value: 88 },
+    },
+    {
+        id: "wave_equation",
+        name: "Wave Equation",
+        latex: "\\frac{\\partial^2 u}{\\partial t^2}=c^2\\nabla^2 u",
+        discoverer: "Jean le Rond d'Alembert",
+        year: 1747,
+        metrics: { authority: 91, influence: 90, history: 79, value: 72 },
+    },
+    {
+        id: "heat_equation",
+        name: "Heat Equation",
+        latex: "\\frac{\\partial u}{\\partial t}=\\alpha \\nabla^2 u",
+        discoverer: "Joseph Fourier",
+        year: 1822,
+        metrics: { authority: 92, influence: 92, history: 83, value: 73 },
+    },
+    {
+        id: "taylor_series",
+        name: "Taylor Series",
+        latex: "f(x)=\\sum_{n=0}^{\\infty}\\frac{f^{(n)}(a)}{n!}(x-a)^n",
+        discoverer: "Brook Taylor",
+        year: 1715,
+        metrics: { authority: 94, influence: 91, history: 84, value: 81 },
+    },
+    {
+        id: "lagrange_multiplier",
+        name: "Lagrange Multipliers",
+        latex: "\\nabla f = \\lambda \\nabla g",
+        discoverer: "Joseph-Louis Lagrange",
+        year: 1788,
+        metrics: { authority: 90, influence: 86, history: 77, value: 74 },
+    },
+    {
+        id: "gauss_divergence",
+        name: "Gauss Divergence Theorem",
+        latex: "\\iiint_V \\nabla\\cdot F\\,dV = \\iint_{\\partial V} F\\cdot n\\,dS",
+        discoverer: "Carl Friedrich Gauss",
+        year: 1813,
+        metrics: { authority: 93, influence: 88, history: 82, value: 75 },
+    },
+    {
+        id: "central_limit_theorem",
+        name: "Central Limit Theorem",
+        latex: "\\frac{\\bar X-\\mu}{\\sigma/\\sqrt n} \\to N(0,1)",
+        discoverer: "Laplace & Lyapunov",
+        year: 1810,
+        metrics: { authority: 95, influence: 96, history: 85, value: 83 },
+    },
 ];
 
 const STARTER_IDS = [
-    "euler_identity",
-    "heron_formula",
     "pick_theorem",
+    "law_of_cosines",
+    "euler_identity",
+    "black_scholes",
+    "wave_equation",
 ];
-const CATALOG_OWNED_IDS = new Set(STARTER_IDS);
 
 const library = FORMULA_LIBRARY.map(enrichFormula);
 const formulaById = Object.fromEntries(library.map((card) => [card.id, card]));
@@ -244,6 +340,9 @@ const state = {
     ripProgress: 0,
     isOpening: false,
 };
+
+const RIP_OPEN_THRESHOLD = 0.94;
+const RIP_DRAG_DISTANCE = 240;
 
 function enrichFormula(formula) {
     const weightedScore = Number(
@@ -279,32 +378,13 @@ function imageExists(path) {
     });
 }
 
-async function resolveCardImagePath(cardNumber, side) {
-    for (const ext of CARD_IMAGE_EXTENSIONS) {
-        const candidate = `image/card${cardNumber}${side}.${ext}`;
-        if (await imageExists(candidate)) {
-            return candidate;
-        }
-    }
-    return null;
-}
-
 async function applyCustomCardDesigns() {
-    await Promise.all(
-        library.map(async (formula, index) => {
-            const cardNumber = index + 1;
-            const [front, back] = await Promise.all([
-                resolveCardImagePath(cardNumber, "f"),
-                resolveCardImagePath(cardNumber, "b"),
-            ]);
-
-            if (front) {
-                formula.artwork = front;
-            }
-
-            formula.backArtwork = back || front || DEFAULT_CARD_BACK;
-        }),
-    );
+    library.forEach((formula) => {
+        const override = CARD_IMAGE_OVERRIDES[formula.id];
+        if (!override?.front) return;
+        formula.artwork = override.front;
+        formula.backArtwork = override.back || override.front;
+    });
 }
 
 function safeStorageGet(key) {
@@ -425,6 +505,36 @@ function getOwnedFormulaIds() {
     return new Set(state.inventory.map((entry) => entry.formulaId));
 }
 
+function loadCatalogOrder() {
+    const raw = safeStorageGet(CATALOG_ORDER_KEY);
+    if (!raw) return [];
+    try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        safeStorageRemove(CATALOG_ORDER_KEY);
+        return [];
+    }
+}
+
+function saveCatalogOrder(order) {
+    safeStorageSet(CATALOG_ORDER_KEY, JSON.stringify(order));
+}
+
+function getCatalogOrderMap() {
+    return new Map(loadCatalogOrder().map((id, index) => [id, index]));
+}
+
+function getOwnedOrderMap() {
+    const order = new Map();
+    state.inventory.forEach((entry, index) => {
+        if (!order.has(entry.formulaId)) {
+            order.set(entry.formulaId, { index, acquiredAt: entry.acquiredAt });
+        }
+    });
+    return order;
+}
+
 function sortInventory(items, mode) {
     const sorted = [...items];
     sorted.sort((a, b) => {
@@ -451,23 +561,29 @@ function rollRarity() {
     return "Bronze";
 }
 
-function drawCardByRarity(rarity) {
-    const pool = library.filter((formula) => formula.rarity === rarity);
+function drawCardByRarity(rarity, excludedIds = new Set()) {
+    const illustratedCards = library.filter((formula) => Boolean(formula.artwork));
+    const availableCards = illustratedCards.filter((formula) => !excludedIds.has(formula.id));
+    const pool = availableCards.filter((formula) => formula.rarity === rarity);
     if (pool.length) {
         return pool[Math.floor(Math.random() * pool.length)];
     }
-    return library
+    return availableCards
         .slice()
         .sort((a, b) => Math.abs(a.weightedScore - thresholdCenter(rarity)) - Math.abs(b.weightedScore - thresholdCenter(rarity)))[0];
 }
 
 function createPack() {
-    const counts = [3, 4, 5];
-    const count = counts[Math.floor(Math.random() * counts.length)];
+    const count = 5;
+    const selectedIds = new Set();
     return Array.from({ length: count }, () => {
         const rarity = rollRarity();
-        return drawCardByRarity(rarity);
-    });
+        const card = drawCardByRarity(rarity, selectedIds);
+        if (card) {
+            selectedIds.add(card.id);
+        }
+        return card;
+    }).filter(Boolean);
 }
 
 function radarPolygonPoints(metrics) {
@@ -520,9 +636,16 @@ function createCardElement(formula, options = {}) {
     const { featured = false } = options;
     const template = document.getElementById("cardTemplate");
     const node = template.content.firstElementChild.cloneNode(true);
+    const hasBackFace = Boolean(formula.backArtwork || DEFAULT_CARD_BACK);
 
     node.dataset.rarity = formula.rarity;
     if (featured) node.classList.add("is-featured");
+    const artSeed = Math.abs(formula.year) + formula.name.length * 13;
+    const artPalette = [220, 232, 244, 256, 268, 280, 32, 44];
+    const artHue = artPalette[artSeed % artPalette.length];
+    const artHueSecondary = artPalette[(artSeed + 3) % artPalette.length];
+    const artHueAccent = artPalette[(artSeed + 5) % artPalette.length];
+    const monogram = formula.name.replace(/[^A-Za-z0-9]/g, "").slice(0, 2).toUpperCase();
 
     // Top: Rarity and Name
     const rarityBadge = node.querySelector(".card-rarity-code");
@@ -530,8 +653,22 @@ function createCardElement(formula, options = {}) {
     rarityBadge.classList.add(RARITY_CLASS[formula.rarity]);
     
     node.querySelector(".card-name").textContent = formula.name;
-    node.style.setProperty("--card-art", `url("${escapeAssetPath(formula.artwork)}")`);
-    node.style.setProperty("--card-back-art", `url("${escapeAssetPath(formula.backArtwork || DEFAULT_CARD_BACK)}")`);
+    if (formula.artwork) {
+        node.style.setProperty("--card-art", `url("${escapeAssetPath(formula.artwork)}")`);
+    } else {
+        node.style.removeProperty("--card-art");
+        node.classList.add("is-generated-art");
+    }
+
+    if (formula.backArtwork || DEFAULT_CARD_BACK) {
+        node.style.setProperty("--card-back-art", `url("${escapeAssetPath(formula.backArtwork || DEFAULT_CARD_BACK)}")`);
+    } else {
+        node.style.removeProperty("--card-back-art");
+    }
+    node.style.setProperty("--art-hue", String(artHue));
+    node.style.setProperty("--art-hue-secondary", String(artHueSecondary));
+    node.style.setProperty("--art-hue-accent", String(artHueAccent));
+    node.querySelector(".formula-sigil-anim").textContent = monogram;
     
     // Formula Bar (Below Name)
     node.querySelector(".card-formula-display").textContent = formula.latex;
@@ -550,9 +687,10 @@ function createCardElement(formula, options = {}) {
     `;
     
     node.querySelector(".card-flavor").textContent = formula.flavor;
-    node.title = `${formula.name} - click to flip`;
+    node.title = hasBackFace ? `${formula.name} - click to flip` : formula.name;
 
     const toggleFlip = () => {
+        if (!hasBackFace) return;
         node.classList.toggle("is-flipped");
         node.setAttribute("aria-pressed", node.classList.contains("is-flipped") ? "true" : "false");
     };
@@ -575,7 +713,7 @@ function createCardElement(formula, options = {}) {
     });
 
     // 3D Tilt Effect
-    node.addEventListener("mousemove", (e) => {
+    node.addEventListener("pointermove", (e) => {
         if (node.classList.contains("is-flipped")) return;
         const rect = node.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -589,7 +727,7 @@ function createCardElement(formula, options = {}) {
         node.style.transform = `perspective(1000px) translateY(-8px) scale(1.03) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
     });
 
-    node.addEventListener("mouseleave", () => {
+    node.addEventListener("pointerleave", () => {
         node.style.transition = "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease";
         node.style.transform = "";
     });
@@ -657,43 +795,218 @@ function bindModalEvents() {
     });
 }
 
-function renderProbabilityTable() {
-    const table = document.getElementById("probabilityTable");
-    table.innerHTML = "";
-    RARITY_PROBABILITIES.forEach((item) => {
-        const cell = document.createElement("div");
-        cell.className = "probability-item";
-        cell.innerHTML = `
-            <div class="label">${item.rarity}</div>
-            <strong class="${RARITY_CLASS[item.rarity]}">${Math.round(item.chance * 100)}%</strong>
-        `;
-        table.append(cell);
+function renderCatalog() {
+    const grid = document.getElementById("catalogGrid");
+    const emptyState = document.getElementById("catalogEmptyState");
+    const ownedIds = getOwnedFormulaIds();
+    const catalogOrder = getCatalogOrderMap();
+    const cards = library
+        .filter((formula) => Boolean(formula))
+        .sort((a, b) => {
+            const orderA = catalogOrder.has(a.id) ? catalogOrder.get(a.id) : Number.MAX_SAFE_INTEGER;
+            const orderB = catalogOrder.has(b.id) ? catalogOrder.get(b.id) : Number.MAX_SAFE_INTEGER;
+            if (orderA !== orderB) return orderA - orderB;
+
+            const rarityDiff = rarityIndex(b.rarity) - rarityIndex(a.rarity);
+            if (rarityDiff !== 0) return rarityDiff;
+
+            const ownedDiff = Number(ownedIds.has(b.id)) - Number(ownedIds.has(a.id));
+            if (ownedDiff !== 0) return ownedDiff;
+
+            return b.weightedScore - a.weightedScore || a.name.localeCompare(b.name);
+        })
+        .map((formula) => {
+            const card = createCardElement(formula);
+            card.dataset.formulaId = formula.id;
+            card.draggable = true;
+            if (!ownedIds.has(formula.id)) {
+                card.classList.add("is-unowned");
+            }
+            card.classList.add("enter");
+            return card;
+        });
+
+    grid.replaceChildren(...cards);
+    if (emptyState) {
+        emptyState.classList.add("hidden");
+    }
+}
+
+function bindCatalogReorder() {
+    const grid = document.getElementById("catalogGrid");
+    if (!grid) return;
+
+    let draggedId = null;
+
+    grid.addEventListener("dragstart", (event) => {
+        const card = event.target instanceof HTMLElement ? event.target.closest(".tcg-card") : null;
+        if (!card) return;
+        draggedId = card.dataset.formulaId || null;
+        card.classList.add("is-dragging");
+        if (event.dataTransfer) {
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", draggedId || "");
+        }
+    });
+
+    grid.addEventListener("dragend", (event) => {
+        const card = event.target instanceof HTMLElement ? event.target.closest(".tcg-card") : null;
+        if (card) {
+            card.classList.remove("is-dragging");
+        }
+        draggedId = null;
+    });
+
+    grid.addEventListener("dragover", (event) => {
+        if (!draggedId) return;
+        event.preventDefault();
+    });
+
+    grid.addEventListener("drop", (event) => {
+        if (!draggedId) return;
+        event.preventDefault();
+        const targetCard = event.target instanceof HTMLElement ? event.target.closest(".tcg-card") : null;
+        if (!targetCard) return;
+        const targetId = targetCard.dataset.formulaId;
+        if (!targetId || targetId === draggedId) return;
+
+        const currentIds = [...grid.querySelectorAll(".tcg-card")]
+            .map((node) => node.dataset.formulaId)
+            .filter(Boolean);
+        const draggedIndex = currentIds.indexOf(draggedId);
+        const targetIndex = currentIds.indexOf(targetId);
+        if (draggedIndex === -1 || targetIndex === -1) return;
+
+        currentIds.splice(draggedIndex, 1);
+        currentIds.splice(targetIndex, 0, draggedId);
+        saveCatalogOrder(currentIds);
+        renderCatalog();
     });
 }
 
-function renderCatalog() {
-    const grid = document.getElementById("catalogGrid");
-    const ownedIds = CATALOG_OWNED_IDS;
-    const cards = library.slice().sort((a, b) => {
-        const ownedDiff = Number(ownedIds.has(b.id)) - Number(ownedIds.has(a.id));
-        if (ownedDiff !== 0) return ownedDiff;
-        const rarityDiff = rarityIndex(b.rarity) - rarityIndex(a.rarity);
-        if (rarityDiff !== 0) return rarityDiff;
-        return b.weightedScore - a.weightedScore;
-    }).map((formula) => {
-        const card = createCardElement(formula);
-        if (!ownedIds.has(formula.id)) {
-            card.classList.add("is-unowned");
-        }
-        card.classList.add("enter");
-        return card;
+function showPage(pageName) {
+    const pageStack = document.getElementById("pageStack");
+    if (pageStack) {
+        pageStack.dataset.page = pageName;
+    }
+
+    document.querySelectorAll(".page-view").forEach((view) => {
+        const isActive = view.dataset.page === pageName;
+        view.classList.toggle("is-active", isActive);
+        view.setAttribute("aria-hidden", isActive ? "false" : "true");
     });
-    grid.replaceChildren(...cards);
+
+    document.querySelectorAll(".page-tab").forEach((button) => {
+        const isActive = button.dataset.pageTarget === pageName;
+        button.classList.toggle("is-active", isActive);
+        button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function bindPageSwipe() {
+    const pageStack = document.getElementById("pageStack");
+    const pageTrack = document.getElementById("pageTrack");
+    if (!pageStack || !pageTrack) return;
+
+    let pointerId = null;
+    let startX = 0;
+    let startY = 0;
+    let deltaX = 0;
+    let isDragging = false;
+
+    const resetDrag = () => {
+        pointerId = null;
+        deltaX = 0;
+        isDragging = false;
+        pageTrack.style.transition = "";
+        pageTrack.style.transform = "";
+    };
+
+    pageStack.addEventListener("pointerdown", (event) => {
+        const interactive = event.target instanceof HTMLElement ? event.target.closest("button, .tcg-card, .card-modal-dialog") : null;
+        if (interactive) return;
+        pointerId = event.pointerId;
+        startX = event.clientX;
+        startY = event.clientY;
+        deltaX = 0;
+        isDragging = true;
+        pageTrack.style.transition = "none";
+    });
+
+    pageStack.addEventListener("pointermove", (event) => {
+        if (!isDragging || event.pointerId !== pointerId) return;
+        const moveX = event.clientX - startX;
+        const moveY = event.clientY - startY;
+        if (Math.abs(moveY) > Math.abs(moveX)) return;
+
+        deltaX = moveX;
+        const baseOffset = pageStack.dataset.page === "catalog" ? -50 : 0;
+        const percentOffset = (deltaX / pageStack.clientWidth) * 50;
+        pageTrack.style.transform = `translateX(calc(${baseOffset}% + ${percentOffset}%))`;
+    });
+
+    pageStack.addEventListener("pointerup", (event) => {
+        if (!isDragging || event.pointerId !== pointerId) return;
+
+        const threshold = Math.max(90, pageStack.clientWidth * 0.12);
+        if (pageStack.dataset.page === "opening" && deltaX > threshold) {
+            showPage("catalog");
+        } else if (pageStack.dataset.page === "catalog" && deltaX < -threshold) {
+            showPage("opening");
+        } else {
+            pageTrack.style.transition = "";
+            pageTrack.style.transform = "";
+        }
+
+        resetDrag();
+    });
+
+    pageStack.addEventListener("pointercancel", resetDrag);
+    pageStack.addEventListener("pointerleave", () => {
+        if (!isDragging) return;
+        pageTrack.style.transition = "";
+        pageTrack.style.transform = "";
+        resetDrag();
+    });
+}
+
+function bindMousePageNavigation() {
+    const pageStack = document.getElementById("pageStack");
+    const pageTrack = document.getElementById("pageTrack");
+    if (!pageStack) return;
+
+    const isBackgroundTarget = (target) => {
+        if (!(target instanceof HTMLElement)) return false;
+        return target === pageStack || target === pageTrack;
+    };
+
+    pageStack.addEventListener("mousedown", (event) => {
+        if (!isBackgroundTarget(event.target)) return;
+
+        if (event.button === 0 && pageStack.dataset.page === "opening") {
+            event.preventDefault();
+            showPage("catalog");
+            return;
+        }
+
+        if (event.button === 2 && pageStack.dataset.page === "catalog") {
+            event.preventDefault();
+            showPage("opening");
+        }
+    });
+
+    pageStack.addEventListener("contextmenu", (event) => {
+        if (!isBackgroundTarget(event.target)) return;
+        event.preventDefault();
+    });
 }
 
 function renderInventory() {
     const grid = document.getElementById("inventoryGrid");
-    const mode = document.getElementById("inventorySort").value;
+    if (!grid) return;
+    const mode = document.getElementById("inventorySort")?.value || "rarity";
     const items = sortInventory(getInventoryGroups(), mode);
     grid.innerHTML = "";
 
@@ -717,28 +1030,37 @@ function renderInventory() {
 
 function updateStats() {
     const groups = getInventoryGroups();
-    document.getElementById("ownedCount").textContent = state.inventory.length;
-    document.getElementById("uniqueCount").textContent = groups.length;
-    document.getElementById("legendaryCount").textContent = groups
-        .filter((item) => item.formula.rarity === "Legendary")
-        .reduce((sum, item) => sum + item.count, 0);
+    const totalsByRarity = Object.fromEntries(RARITY_ORDER.map((rarity) => [rarity, 0]));
+
+    groups.forEach((item) => {
+        totalsByRarity[item.formula.rarity] += item.count;
+    });
+
+    document.getElementById("bronzeCount").textContent = totalsByRarity.Bronze;
+    document.getElementById("silverCount").textContent = totalsByRarity.Silver;
+    document.getElementById("goldCount").textContent = totalsByRarity.Gold;
+    document.getElementById("platinumCount").textContent = totalsByRarity.Platinum;
+    document.getElementById("summaryLegendaryCount").textContent = totalsByRarity.Legendary;
 }
 
 function setRipInstructions(text) {
-    document.getElementById("ripInstructions").textContent = text;
+    document.getElementById("ripInstructions").textContent = "";
 }
 
 function resetPackUI() {
     const packButton = document.getElementById("ripPackButton");
     const spreadFan = document.getElementById("spreadFan");
     packButton.classList.remove("is-opened", "is-ripping", "is-disabled");
+    packButton.dataset.ripState = "sealed";
     packButton.disabled = false;
-    packButton.dataset.progress = "0";
     packButton.style.pointerEvents = "auto";
     packButton.hidden = false;
+    packButton.style.setProperty("--drag-x", "0px");
+    packButton.style.setProperty("--drag-y", "0px");
+    updatePackOpenState(0);
     spreadFan.innerHTML = "";
-    document.getElementById("openingTitle").textContent = "SEALED BOOSTER PACK";
-    document.getElementById("revealMessage").textContent = "Click or drag the wrapper to tear the pack open.";
+    document.getElementById("openingTitle").textContent = "";
+    document.getElementById("revealMessage").textContent = "";
 }
 
 function prepareNewPack() {
@@ -746,23 +1068,22 @@ function prepareNewPack() {
     state.pendingPack = createPack();
     state.ripProgress = 0;
     resetPackUI();
-    setRipInstructions("Tear through the top seam. Click or drag sideways to break the seal.");
+    setRipInstructions("");
 }
 
-function addRipProgress() {
+function updatePackOpenState(progress) {
     const packButton = document.getElementById("ripPackButton");
-    if (packButton.disabled || state.isOpening) return;
-    state.ripProgress = Math.min(3, state.ripProgress + 1);
-    packButton.dataset.progress = String(state.ripProgress);
-    packButton.classList.add("is-ripping");
-    setTimeout(() => packButton.classList.remove("is-ripping"), 480);
+    state.ripProgress = Math.max(0, Math.min(1, progress));
+    packButton.dataset.ripState = state.ripProgress > 0.02 ? "tearing" : "sealed";
+    packButton.style.setProperty("--rip-open", state.ripProgress.toFixed(3));
+    packButton.style.setProperty("--card-peek", Math.max(0, (state.ripProgress - 0.92) / 0.08).toFixed(3));
 
-    if (state.ripProgress === 1) {
-        setRipInstructions("The seal has started to split. One more strong tear.");
-    } else if (state.ripProgress === 2) {
-        setRipInstructions("Almost open. Pull once more to fully reveal the cards.");
-    } else if (state.ripProgress === 3) {
-        openPack();
+    if (state.ripProgress < 0.18) {
+        setRipInstructions("");
+    } else if (state.ripProgress < 0.5) {
+        setRipInstructions("");
+    } else if (state.ripProgress < RIP_OPEN_THRESHOLD) {
+        setRipInstructions("");
     }
 }
 
@@ -779,9 +1100,11 @@ function addPackToInventory(cards) {
 }
 
 function revealPack(cards) {
+    const cardStage = document.getElementById("cardStage");
     const spreadFan = document.getElementById("spreadFan");
     const bestCard = cards.slice().sort((a, b) => rarityIndex(b.rarity) - rarityIndex(a.rarity) || b.weightedScore - a.weightedScore)[0];
 
+    cardStage.classList.remove("is-bursting");
     spreadFan.innerHTML = "";
 
     cards.forEach((card, index) => {
@@ -797,8 +1120,8 @@ function revealPack(cards) {
         });
     });
 
-    document.getElementById("openingTitle").textContent = "OPENED";
-    document.getElementById("revealMessage").textContent = `${cards.length} cards revealed. Highlight: ${bestCard.rarity} ${bestCard.name}`;
+    document.getElementById("openingTitle").textContent = "";
+    document.getElementById("revealMessage").textContent = "";
     setRipInstructions("");
     state.isOpening = false;
 }
@@ -807,16 +1130,24 @@ function openPack() {
     if (!state.pendingPack.length || state.isOpening) return;
     state.isOpening = true;
 
+    const cardStage = document.getElementById("cardStage");
     const packButton = document.getElementById("ripPackButton");
+    updatePackOpenState(1);
+    packButton.dataset.ripState = "opened";
     packButton.classList.add("is-opened");
     packButton.disabled = true;
     packButton.style.pointerEvents = "none";
-    document.getElementById("openingTitle").textContent = "UNSEALING";
-
-    setRipInstructions("The wrapper has fully opened. The pack fades and the cards fan out.");
+    packButton.style.setProperty("--tilt-x", "0deg");
+    packButton.style.setProperty("--tilt-y", "0deg");
+    document.getElementById("openingTitle").textContent = "";
+    setRipInstructions("");
+    cardStage.classList.remove("is-bursting");
+    void cardStage.offsetWidth;
+    cardStage.classList.add("is-bursting");
     addPackToInventory(state.pendingPack);
     updateStats();
     renderInventory();
+    renderCatalog();
 
     setTimeout(() => {
         packButton.hidden = true;
@@ -828,53 +1159,102 @@ function openPack() {
 function bindPackDrag() {
     const packButton = document.getElementById("ripPackButton");
     let pointerDown = false;
-    let dragDistance = 0;
-    let lastX = 0;
+    let startX = 0;
+    let startY = 0;
+    let baseProgress = 0;
+
+    const updatePackTilt = (clientX, clientY) => {
+        const rect = packButton.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const tiltX = ((y - centerY) / centerY) * -6;
+        const tiltY = ((x - centerX) / centerX) * 8;
+        packButton.style.setProperty("--tilt-x", `${tiltX.toFixed(2)}deg`);
+        packButton.style.setProperty("--tilt-y", `${tiltY.toFixed(2)}deg`);
+    };
 
     packButton.addEventListener("pointerdown", (event) => {
         if (packButton.disabled) return;
         pointerDown = true;
-        dragDistance = 0;
-        lastX = event.clientX;
+        startX = event.clientX;
+        startY = event.clientY;
+        baseProgress = state.ripProgress;
+        updatePackTilt(event.clientX, event.clientY);
         packButton.setPointerCapture(event.pointerId);
     });
 
     packButton.addEventListener("pointermove", (event) => {
-        if (!pointerDown || packButton.disabled) return;
-        dragDistance += Math.abs(event.clientX - lastX);
-        lastX = event.clientX;
-        if (dragDistance > 70) {
-            dragDistance = 0;
-            addRipProgress();
+        if (packButton.disabled) return;
+        updatePackTilt(event.clientX, event.clientY);
+        if (!pointerDown) return;
+        const deltaX = event.clientX - startX;
+        const deltaY = event.clientY - startY;
+        const offsetX = Math.max(-18, Math.min(24, deltaX * 0.08));
+        const offsetY = Math.max(-12, Math.min(18, deltaY * 0.05));
+        packButton.style.setProperty("--drag-x", `${offsetX}px`);
+        packButton.style.setProperty("--drag-y", `${offsetY}px`);
+        const nextProgress = baseProgress + Math.max(0, deltaX) / RIP_DRAG_DISTANCE;
+        updatePackOpenState(nextProgress);
+        if (nextProgress >= RIP_OPEN_THRESHOLD) {
+            pointerDown = false;
+            openPack();
         }
     });
 
     packButton.addEventListener("pointerup", () => {
         pointerDown = false;
-        dragDistance = 0;
+        packButton.style.setProperty("--drag-x", "0px");
+        packButton.style.setProperty("--drag-y", "0px");
+        if (!state.isOpening && state.ripProgress >= RIP_OPEN_THRESHOLD) {
+            openPack();
+        }
     });
 
     packButton.addEventListener("pointercancel", () => {
         pointerDown = false;
-        dragDistance = 0;
+        packButton.style.setProperty("--drag-x", "0px");
+        packButton.style.setProperty("--drag-y", "0px");
+        packButton.style.setProperty("--tilt-x", "0deg");
+        packButton.style.setProperty("--tilt-y", "0deg");
+    });
+
+    packButton.addEventListener("pointerleave", () => {
+        if (pointerDown) return;
+        packButton.style.setProperty("--tilt-x", "0deg");
+        packButton.style.setProperty("--tilt-y", "0deg");
     });
 
     packButton.addEventListener("click", () => {
         if (packButton.disabled) return;
-        addRipProgress();
+        updatePackOpenState(Math.min(1, state.ripProgress + 0.22));
+        packButton.classList.add("is-ripping");
+        setTimeout(() => packButton.classList.remove("is-ripping"), 280);
+        if (state.ripProgress >= RIP_OPEN_THRESHOLD) {
+            openPack();
+        }
     });
 }
 
 function bindEvents() {
     document.getElementById("newPackButton").addEventListener("click", prepareNewPack);
-    document.getElementById("inventorySort").addEventListener("change", renderInventory);
+    document.getElementById("inventorySort")?.addEventListener("change", renderInventory);
+    document.querySelectorAll(".page-tab").forEach((button) => {
+        button.addEventListener("click", () => {
+            showPage(button.dataset.pageTarget);
+        });
+    });
+    bindMousePageNavigation();
+    bindPageSwipe();
     bindPackDrag();
+    bindCatalogReorder();
     bindModalEvents();
 }
 
 async function init() {
     await applyCustomCardDesigns();
-    renderProbabilityTable();
+    showPage("opening");
     renderCatalog();
     renderInventory();
     updateStats();
