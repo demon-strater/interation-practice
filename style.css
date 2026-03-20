@@ -169,96 +169,47 @@ body::after {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 12px;
+    gap: 24px;
     margin-top: 38px;
-    padding: 12px 18px;
-    border-radius: 999px;
-    background: linear-gradient(180deg, rgba(17, 15, 35, 0.42), rgba(10, 10, 24, 0.18));
-    box-shadow: inset 0 0 0 1px rgba(155, 130, 255, 0.08);
+    padding: 0;
     position: relative;
     z-index: 1;
-    width: fit-content;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.page-nav::before,
-.page-nav::after {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    color: rgba(201, 188, 255, 0.45);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.82rem;
-    letter-spacing: 0.16em;
-    pointer-events: none;
-}
-
-.page-nav::before {
-    content: "<";
-    left: -28px;
-}
-
-.page-nav::after {
-    content: ">";
-    right: -28px;
 }
 
 .page-tab {
-    border: 1px solid rgba(150, 122, 255, 0.2);
-    border-radius: 18px;
-    background:
-        linear-gradient(180deg, rgba(26, 22, 52, 0.96), rgba(11, 11, 24, 0.92)),
-        radial-gradient(circle at top, rgba(152, 126, 255, 0.18), transparent 58%);
-    color: #e4dbff;
-    padding: 14px 44px 14px 20px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: rgba(228, 219, 255, 0.68);
+    padding: 0 0 6px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.78rem;
+    font-size: 0.86rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    transition: color 0.25s ease, opacity 0.25s ease;
     position: relative;
-    overflow: hidden;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-
-.page-tab::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    right: 16px;
-    width: 10px;
-    height: 10px;
-    border-top: 2px solid currentColor;
-    border-right: 2px solid currentColor;
-    transform: translateY(-50%) rotate(45deg);
-    opacity: 0.72;
+    overflow: visible;
+    box-shadow: none;
 }
 
 .page-tab:hover {
-    transform: translateY(-3px) scale(1.01);
-    border-color: rgba(184, 164, 255, 0.42);
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28), 0 0 24px rgba(128, 102, 255, 0.12);
+    color: rgba(248, 245, 255, 0.9);
 }
 
 .page-tab.is-active {
     color: #fcfaff;
-    border-color: rgba(214, 197, 255, 0.62);
-    background:
-        linear-gradient(180deg, rgba(94, 68, 186, 0.98), rgba(37, 27, 84, 0.98)),
-        radial-gradient(circle at top, rgba(215, 198, 255, 0.28), transparent 55%);
-    box-shadow: 0 16px 32px rgba(56, 37, 121, 0.34), 0 0 28px rgba(126, 96, 255, 0.24);
-    transform: translateX(0);
 }
 
 .page-tab.is-active::after {
     content: "";
     position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
-    animation: navSlideGlow 1.8s ease-in-out infinite;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
 }
 
 .page-stack {
@@ -284,6 +235,10 @@ body::after {
     min-width: 0;
     flex: 0 0 auto;
     padding-right: 0;
+}
+
+.page-view[hidden] {
+    display: none !important;
 }
 
 .page-view:last-child {
@@ -1440,6 +1395,10 @@ body::after {
     position: fixed;
     inset: 0;
     z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
 }
 
 .card-modal-backdrop {
@@ -1451,13 +1410,14 @@ body::after {
 
 .card-modal-dialog {
     position: relative;
-    width: min(1120px, calc(100vw - 48px));
-    max-height: calc(100vh - 48px);
-    margin: 24px auto;
+    width: min(1120px, calc(100vw - 40px));
+    max-height: calc(100vh - 40px);
+    margin: 0;
     overflow: auto;
     border-radius: 28px;
     background:
-        radial-gradient(circle at top, rgba(147, 112, 255, 0.12), transparent 30%),
+        radial-gradient(circle at top left, rgba(147, 112, 255, 0.16), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(88, 118, 213, 0.12), transparent 30%),
         linear-gradient(180deg, rgba(20, 17, 43, 0.98), rgba(8, 9, 18, 0.98));
     border: 1px solid rgba(139, 108, 223, 0.24);
     box-shadow: 0 32px 80px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(68, 57, 122, 0.38);
@@ -1480,19 +1440,26 @@ body::after {
 
 .card-modal-layout {
     display: grid;
-    grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
-    gap: 28px;
-    padding: 32px;
+    grid-template-columns: minmax(320px, 390px) minmax(0, 1fr);
+    gap: 24px;
+    padding: 28px;
+    align-items: start;
 }
 
 .card-modal-visual {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 18px;
+    border-radius: 24px;
+    background:
+        linear-gradient(180deg, rgba(31, 24, 64, 0.72), rgba(12, 13, 26, 0.72)),
+        radial-gradient(circle at top, rgba(178, 155, 255, 0.12), transparent 56%);
+    border: 1px solid rgba(152, 126, 255, 0.12);
 }
 
 .modal-card-3d {
-    width: min(100%, 380px);
+    width: min(100%, 340px);
 }
 
 .modal-preview-card {
@@ -1500,9 +1467,11 @@ body::after {
 }
 
 .card-modal-info {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    align-content: start;
+    padding-top: 6px;
 }
 
 .modal-kicker {
@@ -1511,18 +1480,21 @@ body::after {
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: #bfaeff;
+    grid-column: 1 / -1;
 }
 
 .card-modal-info h3 {
     margin: 0;
-    font-size: clamp(2rem, 3vw, 3.4rem);
-    line-height: 1.02;
+    font-size: clamp(1.7rem, 2.6vw, 2.7rem);
+    line-height: 1.08;
+    grid-column: 1 / -1;
 }
 
 .modal-badges {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
+    grid-column: 1 / -1;
 }
 
 .modal-score {
@@ -1538,6 +1510,7 @@ body::after {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
+    grid-column: 1 / -1;
 }
 
 .modal-meta-grid > div,
@@ -1551,7 +1524,7 @@ body::after {
 }
 
 .modal-meta-grid > div {
-    padding: 16px;
+    padding: 14px;
 }
 
 .meta-label {
@@ -1564,7 +1537,11 @@ body::after {
 }
 
 .modal-section {
-    padding: 18px;
+    padding: 16px;
+}
+
+.modal-section-wide {
+    grid-column: 1 / -1;
 }
 
 .modal-section h4 {
@@ -1578,18 +1555,18 @@ body::after {
 .modal-section p,
 .modal-meta-grid strong {
     margin: 0;
-    line-height: 1.65;
+    line-height: 1.58;
     color: #f8fafc;
 }
 
 .modal-stats {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    gap: 10px;
 }
 
 .modal-stat {
-    padding: 16px;
+    padding: 14px;
 }
 
 .modal-stat span {
@@ -1608,15 +1585,19 @@ body::after {
 @media (max-width: 900px) {
     .card-modal-dialog {
         width: min(100vw - 24px, 1120px);
+        height: auto;
         max-height: calc(100vh - 24px);
-        margin: 12px auto;
+        margin: 0;
+        overflow: auto;
     }
 
     .card-modal-layout {
         grid-template-columns: 1fr;
         padding: 20px;
+        height: auto;
     }
 
+    .card-modal-info,
     .modal-meta-grid,
     .modal-stats {
         grid-template-columns: 1fr;

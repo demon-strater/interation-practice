@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>마테마티카</title>
-  <link rel="stylesheet" href="style.css?v=20260321-11">
+  <link rel="stylesheet" href="style.css?v=20260321-15">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -14,8 +14,8 @@
         <h1 class="glitch" data-text="마테마티카">마테마티카</h1>
         <p class="hero-subtitle">MATHEMATICAL ARCHIVES & COLLECTIONS</p>
         <nav class="page-nav" aria-label="Section navigation">
-          <button class="page-tab is-active" type="button" data-page-target="opening" aria-pressed="true">Card Opening</button>
-          <button class="page-tab" type="button" data-page-target="catalog">Master Catalog</button>
+          <button class="page-tab is-active" type="button" data-page-target="opening" aria-pressed="true">Pack Opening</button>
+          <button class="page-tab" type="button" data-page-target="catalog">Collected Cards</button>
         </nav>
       </div>
     </header>
@@ -56,29 +56,6 @@
       </section>
 
       <section class="page-view" data-page="catalog" aria-label="Master Catalog page" hidden>
-        <section class="rarity-summary" aria-label="Owned cards by rarity">
-          <div class="rarity-summary-card bronze">
-            <span>Bronze</span>
-            <strong id="bronzeCount">0</strong>
-          </div>
-          <div class="rarity-summary-card silver">
-            <span>Silver</span>
-            <strong id="silverCount">0</strong>
-          </div>
-          <div class="rarity-summary-card gold">
-            <span>Gold</span>
-            <strong id="goldCount">0</strong>
-          </div>
-          <div class="rarity-summary-card platinum">
-            <span>Platinum</span>
-            <strong id="platinumCount">0</strong>
-          </div>
-          <div class="rarity-summary-card legendary">
-            <span>Legendary</span>
-            <strong id="summaryLegendaryCount">0</strong>
-          </div>
-        </section>
-
         <section class="panel catalog-panel">
         <div class="panel-header">
           <h2 class="panel-title">COLLECTED CARDS</h2>
@@ -106,7 +83,7 @@
           <div id="modalCard3d" class="modal-card-3d"></div>
         </div>
         <div class="card-modal-info">
-          <p class="modal-kicker">Relic Status</p>
+          <p class="modal-kicker">카드 아카이브</p>
           <h3 id="modalTitle"></h3>
           <div class="modal-badges">
             <span id="modalRarity" class="rarity-chip"></span>
@@ -114,28 +91,24 @@
           </div>
           <div class="modal-meta-grid">
             <div>
-              <span class="meta-label">Discoverer</span>
+              <span class="meta-label">발견자</span>
               <strong id="modalDiscoverer"></strong>
             </div>
             <div>
-              <span class="meta-label">Year</span>
+              <span class="meta-label">시기</span>
               <strong id="modalYear"></strong>
             </div>
-            <div>
-              <span class="meta-label">Formula</span>
-              <strong id="modalFormula" class="mono"></strong>
-            </div>
           </div>
-          <div class="modal-section">
-            <h4>Origin</h4>
+          <div class="modal-section modal-section-wide">
+            <h4>배경</h4>
             <p id="modalOrigin"></p>
           </div>
-          <div class="modal-section">
-            <h4>Core Idea</h4>
-            <p id="modalCore"></p>
+          <div class="modal-section modal-section-wide">
+            <h4>의미</h4>
+            <p id="modalSignificance"></p>
           </div>
           <div class="modal-section">
-            <h4>4 Metrics</h4>
+            <h4>카드 지표</h4>
             <div id="modalStats" class="modal-stats"></div>
           </div>
         </div>
@@ -183,7 +156,7 @@
     </article>
   </template>
 
-  <script src="script.js?v=20260321-11"></script>
+  <script src="script.js?v=20260321-15"></script>
 </body>
 </html>
 

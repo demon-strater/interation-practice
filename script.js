@@ -41,11 +41,11 @@ const METRIC_WEIGHTS = {
 };
 
 const FLAVOR_BY_RARITY = {
-    Bronze: "A stable foundational formula card that anchors the basics.",
-    Silver: "A versatile card with broad utility and strong collection value.",
-    Gold: "A defining card built around a concept that changed its era.",
-    Platinum: "A top-tier card whose influence extends across the field.",
-    Legendary: "A legendary card treated as an icon of mathematics itself.",
+    Bronze: "기초를 단단히 받쳐 주는 기본 공식 카드.",
+    Silver: "범용성과 활용도가 높은 실전형 공식 카드.",
+    Gold: "시대를 대표할 만큼 영향력이 큰 핵심 공식 카드.",
+    Platinum: "여러 분야에 깊게 스며든 최상위권 공식 카드.",
+    Legendary: "수학 그 자체의 상징처럼 다뤄지는 전설적 공식 카드.",
 };
 
 const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/demon-strater/interation-practice/main";
@@ -68,11 +68,11 @@ const CARD_IMAGE_OVERRIDES = {
 const DETAIL_COPY = {
     euler_identity: {
         origin:
-            "Published by Leonhard Euler in 1748, this identity became famous for gathering five fundamental constants into one exact relation.",
+            "1748년 레온하르트 오일러가 정리한 식으로, 수학의 핵심 상수 다섯 개를 하나의 관계식으로 묶는다는 점에서 특히 유명해졌습니다.",
         core:
-            "It is derived from Euler's formula e^(ix) = cos(x) + i sin(x). Setting x to pi yields e^(i*pi) = -1, which rearranges to e^(i*pi) + 1 = 0.",
+            "오일러 공식 e^(ix) = cos(x) + i sin(x)에서 x에 pi를 대입하면 e^(i*pi) = -1이 되고, 이를 정리하면 e^(i*pi) + 1 = 0이 됩니다.",
         significance:
-            "It links 0, 1, i, pi, and e in a single line. That compression of algebra, geometry, and complex analysis is why it is often treated as a symbol of mathematical beauty.",
+            "0, 1, i, pi, e를 한 줄로 연결한다는 점에서 상징성이 매우 큽니다. 대수, 기하, 복소해석의 감각이 응축되어 있어 수학적 아름다움의 대표 예시로 자주 언급됩니다.",
     },
 };
 
@@ -358,9 +358,9 @@ function enrichFormula(formula) {
         artwork: DEFAULT_CARD_ART,
         backArtwork: DEFAULT_CARD_BACK,
         detail: DETAIL_COPY[formula.id] || {
-            origin: `${formula.name} is tied to ${formula.discoverer} and remains part of the mathematical canon because it keeps reappearing in later theories and applications.`,
-            core: `${formula.name} is represented here by ${formula.latex}. In this collection, the card stands for the main structural idea behind that expression.`,
-            significance: `Its influence comes from how reliably it connects concepts, simplifies proofs, or supports practical problem solving across the field.`,
+            origin: `${formula.name}은 ${formula.discoverer}와 연결된 공식으로, 이후의 이론과 응용 속에서 반복적으로 등장하며 수학의 고전으로 자리 잡았습니다.`,
+            core: `이 카드에서는 ${formula.latex}를 통해 ${formula.name}의 핵심 구조를 보여줍니다. 식의 형태보다 그 안에 담긴 아이디어가 중심입니다.`,
+            significance: `서로 다른 개념을 연결하고, 증명을 단순화하거나, 실제 문제 해결에 직접 쓰인다는 점에서 높은 가치를 지닙니다.`,
         },
     };
 }
@@ -383,7 +383,7 @@ async function applyCustomCardDesigns() {
         const override = CARD_IMAGE_OVERRIDES[formula.id];
         if (!override?.front) return;
         formula.artwork = override.front;
-        formula.backArtwork = override.back || override.front;
+        formula.backArtwork = DEFAULT_CARD_BACK;
     });
 }
 
@@ -752,12 +752,11 @@ function openCardModal(formula) {
     document.getElementById("modalTitle").textContent = formula.name;
     rarityNode.textContent = formula.rarity;
     rarityNode.className = `rarity-chip ${RARITY_CLASS[formula.rarity]}`;
-    document.getElementById("modalScore").textContent = `Weighted ${formula.weightedScore}`;
+    document.getElementById("modalScore").textContent = `가중 점수 ${formula.weightedScore}`;
     document.getElementById("modalDiscoverer").textContent = formula.discoverer;
     document.getElementById("modalYear").textContent = formatYear(formula.year);
-    document.getElementById("modalFormula").textContent = formula.latex;
     document.getElementById("modalOrigin").textContent = formula.detail.origin;
-    document.getElementById("modalCore").textContent = formula.detail.core;
+    document.getElementById("modalSignificance").textContent = formula.detail.significance;
     document.getElementById("modalStats").innerHTML = buildModalStats(formula);
 
     const modalCard = createCardElement(formula, { featured: true });
@@ -894,6 +893,7 @@ function showPage(pageName) {
         const isActive = view.dataset.page === pageName;
         view.classList.toggle("is-active", isActive);
         view.hidden = !isActive;
+        view.style.display = isActive ? "flex" : "none";
         view.setAttribute("aria-hidden", isActive ? "false" : "true");
     });
 
@@ -932,18 +932,7 @@ function renderInventory() {
 }
 
 function updateStats() {
-    const groups = getInventoryGroups();
-    const totalsByRarity = Object.fromEntries(RARITY_ORDER.map((rarity) => [rarity, 0]));
-
-    groups.forEach((item) => {
-        totalsByRarity[item.formula.rarity] += item.count;
-    });
-
-    document.getElementById("bronzeCount").textContent = totalsByRarity.Bronze;
-    document.getElementById("silverCount").textContent = totalsByRarity.Silver;
-    document.getElementById("goldCount").textContent = totalsByRarity.Gold;
-    document.getElementById("platinumCount").textContent = totalsByRarity.Platinum;
-    document.getElementById("summaryLegendaryCount").textContent = totalsByRarity.Legendary;
+    return getInventoryGroups();
 }
 
 function setRipInstructions(text) {
