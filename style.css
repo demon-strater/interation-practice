@@ -263,17 +263,8 @@ body::after {
 
 .page-stack {
     margin-top: 24px;
-    overflow: hidden;
-    touch-action: pan-y;
+    overflow: visible;
     position: relative;
-}
-
-.page-track {
-    display: flex;
-    width: 200%;
-    transform: translateX(0);
-    transition: transform 0.48s cubic-bezier(0.22, 0.8, 0.22, 1);
-    will-change: transform;
 }
 
 @keyframes navSlideGlow {
@@ -285,23 +276,19 @@ body::after {
     }
 }
 
-.page-stack[data-page="catalog"] .page-track {
-    transform: translateX(-50%);
-}
-
 .page-view {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    width: 50%;
-    min-width: 50%;
-    flex: 0 0 50%;
-    padding-right: 10px;
+    width: 100%;
+    min-width: 0;
+    flex: 0 0 auto;
+    padding-right: 0;
 }
 
 .page-view:last-child {
     padding-right: 0;
-    padding-left: 10px;
+    padding-left: 0;
 }
 
 .page-tab-secondary {

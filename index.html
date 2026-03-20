@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>마테마티카</title>
-  <link rel="stylesheet" href="style.css?v=20260321-6">
+  <link rel="stylesheet" href="style.css?v=20260321-11">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -21,7 +21,6 @@
     </header>
 
     <main class="page-stack" id="pageStack" data-page="opening">
-      <div class="page-track" id="pageTrack">
       <section class="page-view is-active" data-page="opening" aria-label="Pack Opening page">
         <section class="panel pack-panel">
         <div class="panel-header">
@@ -56,7 +55,7 @@
         </section>
       </section>
 
-      <section class="page-view" data-page="catalog" aria-label="Master Catalog page">
+      <section class="page-view" data-page="catalog" aria-label="Master Catalog page" hidden>
         <section class="rarity-summary" aria-label="Owned cards by rarity">
           <div class="rarity-summary-card bronze">
             <span>Bronze</span>
@@ -95,7 +94,6 @@
         <p id="catalogEmptyState" class="empty-state hidden">아직 뽑은 카드가 없습니다. Pack Opening에서 먼저 카드를 열어보세요.</p>
         </section>
       </section>
-      </div>
     </main>
   </div>
 
@@ -185,7 +183,7 @@
     </article>
   </template>
 
-  <script src="script.js?v=20260321-6"></script>
+  <script src="script.js?v=20260321-11"></script>
 </body>
 </html>
 

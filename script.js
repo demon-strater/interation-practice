@@ -48,9 +48,9 @@ const FLAVOR_BY_RARITY = {
     Legendary: "A legendary card treated as an icon of mathematics itself.",
 };
 
+const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/demon-strater/interation-practice/main";
 const DEFAULT_CARD_ART = "";
 const DEFAULT_CARD_BACK = `${GITHUB_RAW_BASE}/image/card1b.png`;
-const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/demon-strater/interation-practice/main";
 const LEGENDARY_CARD_BACK = `${GITHUB_RAW_BASE}/image/card1b.png`;
 const CARD_IMAGE_OVERRIDES = {
     pick_theorem: {
@@ -893,6 +893,7 @@ function showPage(pageName) {
     document.querySelectorAll(".page-view").forEach((view) => {
         const isActive = view.dataset.page === pageName;
         view.classList.toggle("is-active", isActive);
+        view.hidden = !isActive;
         view.setAttribute("aria-hidden", isActive ? "false" : "true");
     });
 
@@ -903,104 +904,6 @@ function showPage(pageName) {
     });
 
     window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function bindPageSwipe() {
-    const pageStack = document.getElementById("pageStack");
-    const pageTrack = document.getElementById("pageTrack");
-    if (!pageStack || !pageTrack) return;
-
-    let pointerId = null;
-    let startX = 0;
-    let startY = 0;
-    let deltaX = 0;
-    let isDragging = false;
-
-    const resetDrag = () => {
-        pointerId = null;
-        deltaX = 0;
-        isDragging = false;
-        pageTrack.style.transition = "";
-        pageTrack.style.transform = "";
-    };
-
-    pageStack.addEventListener("pointerdown", (event) => {
-        const interactive = event.target instanceof HTMLElement ? event.target.closest("button, .tcg-card, .card-modal-dialog") : null;
-        if (interactive) return;
-        pointerId = event.pointerId;
-        startX = event.clientX;
-        startY = event.clientY;
-        deltaX = 0;
-        isDragging = true;
-        pageTrack.style.transition = "none";
-    });
-
-    pageStack.addEventListener("pointermove", (event) => {
-        if (!isDragging || event.pointerId !== pointerId) return;
-        const moveX = event.clientX - startX;
-        const moveY = event.clientY - startY;
-        if (Math.abs(moveY) > Math.abs(moveX)) return;
-
-        deltaX = moveX;
-        const baseOffset = pageStack.dataset.page === "catalog" ? -50 : 0;
-        const percentOffset = (deltaX / pageStack.clientWidth) * 50;
-        pageTrack.style.transform = `translateX(calc(${baseOffset}% + ${percentOffset}%))`;
-    });
-
-    pageStack.addEventListener("pointerup", (event) => {
-        if (!isDragging || event.pointerId !== pointerId) return;
-
-        const threshold = Math.max(90, pageStack.clientWidth * 0.12);
-        if (pageStack.dataset.page === "opening" && deltaX > threshold) {
-            showPage("catalog");
-        } else if (pageStack.dataset.page === "catalog" && deltaX < -threshold) {
-            showPage("opening");
-        } else {
-            pageTrack.style.transition = "";
-            pageTrack.style.transform = "";
-        }
-
-        resetDrag();
-    });
-
-    pageStack.addEventListener("pointercancel", resetDrag);
-    pageStack.addEventListener("pointerleave", () => {
-        if (!isDragging) return;
-        pageTrack.style.transition = "";
-        pageTrack.style.transform = "";
-        resetDrag();
-    });
-}
-
-function bindMousePageNavigation() {
-    const pageStack = document.getElementById("pageStack");
-    const pageTrack = document.getElementById("pageTrack");
-    if (!pageStack) return;
-
-    const isBackgroundTarget = (target) => {
-        if (!(target instanceof HTMLElement)) return false;
-        return target === pageStack || target === pageTrack;
-    };
-
-    pageStack.addEventListener("mousedown", (event) => {
-        if (!isBackgroundTarget(event.target)) return;
-
-        if (event.button === 0 && pageStack.dataset.page === "opening") {
-            event.preventDefault();
-            showPage("catalog");
-            return;
-        }
-
-        if (event.button === 2 && pageStack.dataset.page === "catalog") {
-            event.preventDefault();
-            showPage("opening");
-        }
-    });
-
-    pageStack.addEventListener("contextmenu", (event) => {
-        if (!isBackgroundTarget(event.target)) return;
-        event.preventDefault();
-    });
 }
 
 function renderInventory() {
@@ -1245,8 +1148,6 @@ function bindEvents() {
             showPage(button.dataset.pageTarget);
         });
     });
-    bindMousePageNavigation();
-    bindPageSwipe();
     bindPackDrag();
     bindCatalogReorder();
     bindModalEvents();
