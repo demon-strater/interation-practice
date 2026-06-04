@@ -906,15 +906,15 @@ function renderCatalog() {
     const cards = library
         .filter((formula) => Boolean(formula))
         .sort((a, b) => {
+            const ownedDiff = Number(ownedIds.has(b.id)) - Number(ownedIds.has(a.id));
+            if (ownedDiff !== 0) return ownedDiff;
+
             const orderA = catalogOrder.has(a.id) ? catalogOrder.get(a.id) : Number.MAX_SAFE_INTEGER;
             const orderB = catalogOrder.has(b.id) ? catalogOrder.get(b.id) : Number.MAX_SAFE_INTEGER;
             if (orderA !== orderB) return orderA - orderB;
 
             const rarityDiff = rarityIndex(b.rarity) - rarityIndex(a.rarity);
             if (rarityDiff !== 0) return rarityDiff;
-
-            const ownedDiff = Number(ownedIds.has(b.id)) - Number(ownedIds.has(a.id));
-            if (ownedDiff !== 0) return ownedDiff;
 
             return b.weightedScore - a.weightedScore || a.name.localeCompare(b.name);
         })
