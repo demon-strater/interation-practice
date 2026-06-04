@@ -51,6 +51,7 @@ const FLAVOR_BY_RARITY = {
 const GITHUB_CONTENTS_API = "https://api.github.com/repos/demon-strater/interation-practice/contents?ref=main";
 const DEFAULT_CARD_ART = "";
 const DEFAULT_CARD_BACK = "";
+const DEFAULT_CARD_BACK_KEYWORD = "back";
 const DEFAULT_PACK_ART = "";
 const KOREAN_CARD_NAME_TO_ID = {
     "나비에스토크스방정식": "navier_stokes",
@@ -435,6 +436,10 @@ function isPackImage(image) {
     return image.key.includes("pack");
 }
 
+function isBackImage(image) {
+    return image.key.includes(DEFAULT_CARD_BACK_KEYWORD);
+}
+
 function applyPackArtwork(images) {
     const packImage = images.find(isPackImage);
     const packArt = packImage?.url || DEFAULT_PACK_ART;
@@ -445,10 +450,13 @@ async function applyCustomCardDesigns() {
     const githubImages = await fetchGithubPngImages();
     applyPackArtwork(githubImages);
 
-    const cardImages = githubImages.filter((image) => !isPackImage(image));
+    const backImage = githubImages.find(isBackImage);
+    const cardBackArtwork = backImage?.url || DEFAULT_CARD_BACK;
+    const cardImages = githubImages.filter((image) => !isPackImage(image) && !isBackImage(image));
     const unusedImages = new Map(cardImages.map((image) => [image.url, image]));
 
     library.forEach((formula) => {
+        formula.backArtwork = cardBackArtwork;
         const formulaKeys = getFormulaMatchKeys(formula);
         const matchedImage = cardImages.find((image) => {
             const mappedId = KOREAN_CARD_NAME_TO_ID[image.key];
@@ -456,7 +464,6 @@ async function applyCustomCardDesigns() {
         });
         if (!matchedImage) return;
         formula.artwork = matchedImage.url;
-        formula.backArtwork = DEFAULT_CARD_BACK;
         unusedImages.delete(matchedImage.url);
     });
 
@@ -467,19 +474,19 @@ async function applyCustomCardDesigns() {
             const image = fallbackImages[index];
             if (!image) return;
             formula.artwork = image.url;
-            formula.backArtwork = DEFAULT_CARD_BACK;
+            formula.backArtwork = cardBackArtwork;
         });
 
     if (!cardImages.length) {
         library.forEach((formula) => {
-            formula.backArtwork = DEFAULT_CARD_BACK;
+            formula.backArtwork = cardBackArtwork;
         });
         return;
     }
 
     library.forEach((formula) => {
         if (!formula.backArtwork) {
-            formula.backArtwork = DEFAULT_CARD_BACK;
+            formula.backArtwork = cardBackArtwork;
         }
     });
 }
