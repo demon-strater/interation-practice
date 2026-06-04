@@ -827,13 +827,20 @@ function createCardElement(formula, options = {}) {
         const centerY = rect.height / 2;
         const rotateX = ((y - centerY) / centerY) * -12;
         const rotateY = ((x - centerX) / centerX) * 12;
+        const glare = Math.min(1, Math.hypot(x - centerX, y - centerY) / Math.hypot(centerX, centerY));
         
         node.style.transition = "none";
+        node.style.setProperty("--shine-x", `${((x / rect.width) * 100).toFixed(2)}%`);
+        node.style.setProperty("--shine-y", `${((y / rect.height) * 100).toFixed(2)}%`);
+        node.style.setProperty("--tilt-glare", glare.toFixed(3));
         node.style.transform = `perspective(1000px) translateY(-8px) scale(1.03) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
     });
 
     node.addEventListener("pointerleave", () => {
         node.style.transition = "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease";
+        node.style.setProperty("--shine-x", "50%");
+        node.style.setProperty("--shine-y", "20%");
+        node.style.setProperty("--tilt-glare", "0");
         node.style.transform = "";
     });
 
