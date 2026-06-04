@@ -48,22 +48,16 @@ const FLAVOR_BY_RARITY = {
     Legendary: "수학 그 자체의 상징처럼 다뤄지는 전설적 공식 카드.",
 };
 
-const GITHUB_RAW_BASE = "https://raw.githubusercontent.com/demon-strater/interation-practice/main";
+const GITHUB_CONTENTS_API = "https://api.github.com/repos/demon-strater/interation-practice/contents?ref=main";
 const DEFAULT_CARD_ART = "";
-const DEFAULT_CARD_BACK = `${GITHUB_RAW_BASE}/image/card1b.png`;
-const LEGENDARY_CARD_BACK = `${GITHUB_RAW_BASE}/image/card1b.png`;
-const CARD_IMAGE_OVERRIDES = {
-    pick_theorem: {
-        front: `${GITHUB_RAW_BASE}/image/card1f.png`,
-        back: LEGENDARY_CARD_BACK,
-    },
-    law_of_cosines: { front: `${GITHUB_RAW_BASE}/image/card2f.png` },
-    euler_identity: {
-        front: `${GITHUB_RAW_BASE}/image/card3f.png`,
-        back: LEGENDARY_CARD_BACK,
-    },
-    black_scholes: { front: `${GITHUB_RAW_BASE}/image/caed4f.png` },
-    wave_equation: { front: `${GITHUB_RAW_BASE}/image/card5f.png` },
+const DEFAULT_CARD_BACK = "";
+const DEFAULT_PACK_ART = "";
+const KOREAN_CARD_NAME_TO_ID = {
+    "나비에스토크스방정식": "navier_stokes",
+    "벨의부등식": "bell_inequality",
+    "섀넌엔트로피": "shannon_entropy",
+    "오일러라그랑주": "euler_lagrange",
+    "질량에너지": "mass_energy",
 };
 const DETAIL_COPY = {
     euler_identity: {
@@ -122,6 +116,14 @@ const FORMULA_LIBRARY = [
         metrics: { authority: 95, influence: 99, history: 92, value: 90 },
     },
     {
+        id: "mass_energy",
+        name: "Mass-Energy Equivalence",
+        latex: "E = mc^2",
+        discoverer: "Albert Einstein",
+        year: 1905,
+        metrics: { authority: 98, influence: 99, history: 96, value: 91 },
+    },
+    {
         id: "bayes_theorem",
         name: "Bayes' Theorem",
         latex: "P(A|B) = \\frac{P(B|A)P(A)}{P(B)}",
@@ -144,6 +146,14 @@ const FORMULA_LIBRARY = [
         discoverer: "Claude Shannon",
         year: 1948,
         metrics: { authority: 95, influence: 96, history: 86, value: 84 },
+    },
+    {
+        id: "bell_inequality",
+        name: "Bell's Inequality",
+        latex: "|E(a,b) - E(a,b') + E(a',b) + E(a',b')| \\le 2",
+        discoverer: "John Stewart Bell",
+        year: 1964,
+        metrics: { authority: 94, influence: 92, history: 84, value: 78 },
     },
     {
         id: "navier_stokes",
@@ -306,6 +316,14 @@ const FORMULA_LIBRARY = [
         metrics: { authority: 90, influence: 86, history: 77, value: 74 },
     },
     {
+        id: "euler_lagrange",
+        name: "Euler-Lagrange Equation",
+        latex: "\\frac{d}{dt}\\frac{\\partial L}{\\partial \\dot{q}} - \\frac{\\partial L}{\\partial q} = 0",
+        discoverer: "Leonhard Euler & Joseph-Louis Lagrange",
+        year: 1755,
+        metrics: { authority: 93, influence: 90, history: 88, value: 86 },
+    },
+    {
         id: "gauss_divergence",
         name: "Gauss Divergence Theorem",
         latex: "\\iiint_V \\nabla\\cdot F\\,dV = \\iint_{\\partial V} F\\cdot n\\,dS",
@@ -378,12 +396,91 @@ function imageExists(path) {
     });
 }
 
+function normalizeImageMatchKey(value) {
+    return value
+        .replace(/\.[^.]+$/, "")
+        .normalize("NFC")
+        .toLowerCase()
+        .replace(/[^a-z0-9가-힣]+/g, "");
+}
+
+function getFormulaMatchKeys(formula) {
+    return new Set([
+        normalizeImageMatchKey(formula.id),
+        normalizeImageMatchKey(formula.name),
+        normalizeImageMatchKey(formula.name.replace(/equation|theorem|formula|inequality|principle/gi, "")),
+    ]);
+}
+
+async function fetchGithubPngImages() {
+    try {
+        const response = await fetch(`${GITHUB_CONTENTS_API}&v=${Date.now()}`);
+        if (!response.ok) return [];
+        const files = await response.json();
+        if (!Array.isArray(files)) return [];
+        return files
+            .filter((file) => file.type === "file" && /\.png$/i.test(file.name) && file.download_url)
+            .map((file) => ({
+                name: file.name,
+                key: normalizeImageMatchKey(file.name),
+                url: file.download_url,
+            }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+    } catch {
+        return [];
+    }
+}
+
+function isPackImage(image) {
+    return image.key.includes("pack");
+}
+
+function applyPackArtwork(images) {
+    const packImage = images.find(isPackImage);
+    const packArt = packImage?.url || DEFAULT_PACK_ART;
+    document.documentElement.style.setProperty("--pack-art", packArt ? `url("${escapeAssetPath(packArt)}")` : "none");
+}
+
 async function applyCustomCardDesigns() {
+    const githubImages = await fetchGithubPngImages();
+    applyPackArtwork(githubImages);
+
+    const cardImages = githubImages.filter((image) => !isPackImage(image));
+    const unusedImages = new Map(cardImages.map((image) => [image.url, image]));
+
     library.forEach((formula) => {
-        const override = CARD_IMAGE_OVERRIDES[formula.id];
-        if (!override?.front) return;
-        formula.artwork = override.front;
+        const formulaKeys = getFormulaMatchKeys(formula);
+        const matchedImage = cardImages.find((image) => {
+            const mappedId = KOREAN_CARD_NAME_TO_ID[image.key];
+            return mappedId === formula.id || formulaKeys.has(image.key);
+        });
+        if (!matchedImage) return;
+        formula.artwork = matchedImage.url;
         formula.backArtwork = DEFAULT_CARD_BACK;
+        unusedImages.delete(matchedImage.url);
+    });
+
+    const fallbackImages = [...unusedImages.values()];
+    library
+        .filter((formula) => !formula.artwork)
+        .forEach((formula, index) => {
+            const image = fallbackImages[index];
+            if (!image) return;
+            formula.artwork = image.url;
+            formula.backArtwork = DEFAULT_CARD_BACK;
+        });
+
+    if (!cardImages.length) {
+        library.forEach((formula) => {
+            formula.backArtwork = DEFAULT_CARD_BACK;
+        });
+        return;
+    }
+
+    library.forEach((formula) => {
+        if (!formula.backArtwork) {
+            formula.backArtwork = DEFAULT_CARD_BACK;
+        }
     });
 }
 

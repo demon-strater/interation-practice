@@ -572,7 +572,7 @@ body::after {
 .pack-top {
     position: absolute;
     inset: 0;
-    background-image: url("image/pack2.png");
+    background-image: var(--pack-art, none);
     background-position: center;
     background-repeat: no-repeat;
     background-size: contain;
