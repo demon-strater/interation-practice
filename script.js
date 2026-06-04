@@ -343,11 +343,11 @@ const FORMULA_LIBRARY = [
 ];
 
 const STARTER_IDS = [
-    "pick_theorem",
-    "law_of_cosines",
-    "euler_identity",
-    "black_scholes",
-    "wave_equation",
+    "shannon_entropy",
+    "navier_stokes",
+    "bell_inequality",
+    "euler_lagrange",
+    "mass_energy",
 ];
 
 const library = FORMULA_LIBRARY.map(enrichFormula);
@@ -520,8 +520,9 @@ function safeStorageRemove(key) {
 }
 
 function ensureStarterInventory(entries) {
-    const existingIds = new Set(entries.map((entry) => entry.formulaId));
-    const next = [...entries];
+    const starterIds = new Set(STARTER_IDS);
+    const next = entries.filter((entry) => entry.source !== "starter" || starterIds.has(entry.formulaId));
+    const existingIds = new Set(next.map((entry) => entry.formulaId));
     let timestamp = Date.now();
 
     STARTER_IDS.forEach((id) => {
@@ -908,6 +909,9 @@ function renderCatalog() {
         .sort((a, b) => {
             const ownedDiff = Number(ownedIds.has(b.id)) - Number(ownedIds.has(a.id));
             if (ownedDiff !== 0) return ownedDiff;
+
+            const artworkDiff = Number(Boolean(b.artwork)) - Number(Boolean(a.artwork));
+            if (artworkDiff !== 0) return artworkDiff;
 
             const orderA = catalogOrder.has(a.id) ? catalogOrder.get(a.id) : Number.MAX_SAFE_INTEGER;
             const orderB = catalogOrder.has(b.id) ? catalogOrder.get(b.id) : Number.MAX_SAFE_INTEGER;
