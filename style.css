@@ -944,6 +944,7 @@ body::after {
 }
 
 .hand-control-button {
+    display: none;
     position: fixed;
     top: 22px;
     right: 24px;
