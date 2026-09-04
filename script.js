@@ -1259,16 +1259,21 @@ function openPack() {
     cardStage.classList.remove("is-bursting");
     void cardStage.offsetWidth;
     cardStage.classList.add("is-bursting");
-    addPackToInventory(state.pendingPack);
-    updateStats();
-    renderInventory();
-    renderCatalog();
-
+    const openedCards = [...state.pendingPack];
     setTimeout(() => {
         packButton.hidden = true;
-        revealPack(state.pendingPack);
+        revealPack(openedCards);
         state.pendingPack = [];
     }, 520);
+
+    addPackToInventory(state.pendingPack);
+    updateStats();
+    try {
+        renderInventory();
+        renderCatalog();
+    } catch (error) {
+        console.error("Collected-card rendering failed after opening a pack", error);
+    }
 }
 
 function snapOpenPack() {
@@ -1394,14 +1399,26 @@ function bindEvents() {
     bindModalEvents();
 }
 
-async function init() {
-    await applyCustomCardDesigns();
+function init() {
+    // Render immediately from bundled assets. Remote artwork discovery must
+    // never block pack interaction or the collected-card catalog.
+    applyPackArtwork([]);
+    library.forEach((formula) => {
+        formula.backArtwork = formula.backArtwork || DEFAULT_CARD_BACK;
+    });
     showPage("opening");
     renderCatalog();
     renderInventory();
     updateStats();
     bindEvents();
     prepareNewPack();
+
+    applyCustomCardDesigns().then(() => {
+        renderCatalog();
+        renderInventory();
+    }).catch((error) => {
+        console.warn("Using bundled card artwork because remote artwork discovery failed", error);
+    });
 }
 
 document.addEventListener("DOMContentLoaded", init);
