@@ -23,8 +23,7 @@ let lastSnapAt = 0;
 let fistStartedAt = 0;
 let fistTriggered = false;
 let lastHoveredCard = null;
-let openPalmStartedAt = 0;
-let openPalmStartX = 0;
+let openPalmSamples = [];
 let lastPalmSwipeAt = 0;
 const pointerId = 9876;
 const PAGE_ORDER = ["opening", "catalog", "about"];
@@ -96,7 +95,7 @@ function releaseGesture() {
     if (pinching) endPinch(pinchStartX, previousY);
     fistStartedAt = 0;
     fistTriggered = false;
-    openPalmStartedAt = 0;
+    openPalmSamples = [];
     cursor.classList.remove("is-visible", "is-pinching", "is-fist");
 }
 
@@ -171,39 +170,44 @@ function detectOpenPalmSwipe(hand, isFist, isPinching) {
     const extendedFingers = [[8, 6], [12, 10], [16, 14], [20, 18]].filter(([tipIndex, jointIndex]) => {
         const tip = hand[tipIndex];
         const joint = hand[jointIndex];
-        return Math.hypot(tip.x - wrist.x, tip.y - wrist.y) > Math.hypot(joint.x - wrist.x, joint.y - wrist.y) * 1.12;
+        const tipDistance = Math.hypot(tip.x - wrist.x, tip.y - wrist.y);
+        const jointDistance = Math.hypot(joint.x - wrist.x, joint.y - wrist.y);
+        return tipDistance > jointDistance * 1.04 && tip.y < joint.y + 0.035;
     }).length;
-    const isOpenPalm = extendedFingers >= 4 && !isFist && !isPinching;
+    const palmSpread = Math.hypot(hand[5].x - hand[17].x, hand[5].y - hand[17].y);
+    const isOpenPalm = extendedFingers >= 3 && palmSpread > 0.075 && !isFist && !isPinching;
 
     if (!isOpenPalm) {
-        openPalmStartedAt = 0;
+        openPalmSamples = [];
         return false;
     }
 
     // Mirror MediaPipe's camera coordinate so movement matches what users see.
     const palmX = 1 - hand[9].x;
-    if (!openPalmStartedAt) {
-        openPalmStartedAt = now;
-        openPalmStartX = palmX;
-        return false;
-    }
+    const palmY = hand[9].y;
+    openPalmSamples.push({ x: palmX, y: palmY, time: now });
+    openPalmSamples = openPalmSamples.filter((sample) => now - sample.time <= 850).slice(-18);
+    if (openPalmSamples.length < 5 || now - lastPalmSwipeAt < 850) return false;
 
-    const elapsed = now - openPalmStartedAt;
-    const deltaX = palmX - openPalmStartX;
-    if (elapsed > 950) {
-        openPalmStartedAt = now;
-        openPalmStartX = palmX;
-        return false;
-    }
-
-    if (Math.abs(deltaX) < 0.16 || now - lastPalmSwipeAt < 900) return false;
+    const first = openPalmSamples[0];
+    const last = openPalmSamples[openPalmSamples.length - 1];
+    const elapsed = last.time - first.time;
+    const deltaX = last.x - first.x;
+    const deltaY = last.y - first.y;
+    const horizontalTravel = openPalmSamples.slice(1).reduce((sum, sample, index) => {
+        return sum + Math.abs(sample.x - openPalmSamples[index].x);
+    }, 0);
+    const directionConsistency = horizontalTravel ? Math.abs(deltaX) / horizontalTravel : 0;
+    const isDeliberateSwipe = elapsed >= 140 && Math.abs(deltaX) >= 0.105 &&
+        Math.abs(deltaX) > Math.abs(deltaY) * 1.45 && directionConsistency >= 0.62;
+    if (!isDeliberateSwipe) return false;
 
     const currentPage = document.getElementById("pageStack")?.dataset.page || PAGE_ORDER[0];
     const currentIndex = PAGE_ORDER.indexOf(currentPage);
     // Left hand movement advances to the section on the right; right goes back.
     const nextIndex = deltaX < 0 ? currentIndex + 1 : currentIndex - 1;
     const targetPage = PAGE_ORDER[nextIndex];
-    openPalmStartedAt = 0;
+    openPalmSamples = [];
     lastPalmSwipeAt = now;
     if (!targetPage) return false;
 
