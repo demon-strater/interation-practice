@@ -23,7 +23,11 @@ let lastSnapAt = 0;
 let fistStartedAt = 0;
 let fistTriggered = false;
 let lastHoveredCard = null;
+let openPalmStartedAt = 0;
+let openPalmStartX = 0;
+let lastPalmSwipeAt = 0;
 const pointerId = 9876;
+const PAGE_ORDER = ["opening", "catalog", "about"];
 
 function setStatus(message, isError = false) {
     status.textContent = message;
@@ -92,6 +96,7 @@ function releaseGesture() {
     if (pinching) endPinch(pinchStartX, previousY);
     fistStartedAt = 0;
     fistTriggered = false;
+    openPalmStartedAt = 0;
     cursor.classList.remove("is-visible", "is-pinching", "is-fist");
 }
 
@@ -130,13 +135,7 @@ function goBackInSite() {
         return;
     }
 
-    const currentPage = document.getElementById("pageStack")?.dataset.page;
-    if (currentPage === "catalog") {
-        document.querySelector('[data-page-target="opening"]')?.click();
-        return;
-    }
-
-    if (history.length > 1) history.back();
+    history.back();
 }
 
 function detectFist(hand, handedness) {
@@ -161,22 +160,54 @@ function detectFist(hand, handedness) {
     if (!fistStartedAt) fistStartedAt = now;
     if (!fistTriggered && !pinching && now - fistStartedAt >= 480) {
         fistTriggered = true;
-        const indexBase = hand[5];
-        const pinkyBase = hand[17];
-        const indexX = indexBase.x - wrist.x;
-        const indexY = indexBase.y - wrist.y;
-        const pinkyX = pinkyBase.x - wrist.x;
-        const pinkyY = pinkyBase.y - wrist.y;
-        const palmNormal = indexX * pinkyY - indexY * pinkyX;
-        // MediaPipe handedness assumes a mirrored selfie image; the camera frames are raw.
-        const handednessCorrection = handedness === "Left" ? 1 : -1;
-        const palmFacesCamera = palmNormal * handednessCorrection > 0;
-        if (palmFacesCamera) {
-            location.reload();
-        } else {
-            goBackInSite();
-        }
+        goBackInSite();
     }
+    return true;
+}
+
+function detectOpenPalmSwipe(hand, isFist, isPinching) {
+    const now = performance.now();
+    const wrist = hand[0];
+    const extendedFingers = [[8, 6], [12, 10], [16, 14], [20, 18]].filter(([tipIndex, jointIndex]) => {
+        const tip = hand[tipIndex];
+        const joint = hand[jointIndex];
+        return Math.hypot(tip.x - wrist.x, tip.y - wrist.y) > Math.hypot(joint.x - wrist.x, joint.y - wrist.y) * 1.12;
+    }).length;
+    const isOpenPalm = extendedFingers >= 4 && !isFist && !isPinching;
+
+    if (!isOpenPalm) {
+        openPalmStartedAt = 0;
+        return false;
+    }
+
+    // Mirror MediaPipe's camera coordinate so movement matches what users see.
+    const palmX = 1 - hand[9].x;
+    if (!openPalmStartedAt) {
+        openPalmStartedAt = now;
+        openPalmStartX = palmX;
+        return false;
+    }
+
+    const elapsed = now - openPalmStartedAt;
+    const deltaX = palmX - openPalmStartX;
+    if (elapsed > 950) {
+        openPalmStartedAt = now;
+        openPalmStartX = palmX;
+        return false;
+    }
+
+    if (Math.abs(deltaX) < 0.16 || now - lastPalmSwipeAt < 900) return false;
+
+    const currentPage = document.getElementById("pageStack")?.dataset.page || PAGE_ORDER[0];
+    const currentIndex = PAGE_ORDER.indexOf(currentPage);
+    // Left hand movement advances to the section on the right; right goes back.
+    const nextIndex = deltaX < 0 ? currentIndex + 1 : currentIndex - 1;
+    const targetPage = PAGE_ORDER[nextIndex];
+    openPalmStartedAt = 0;
+    lastPalmSwipeAt = now;
+    if (!targetPage) return false;
+
+    document.querySelector(`[data-page-target="${targetPage}"]`)?.click();
     return true;
 }
 
@@ -205,6 +236,8 @@ function trackFrame() {
                 cursor.classList.remove("is-fist");
             }
             if (isFist) nextPinching = false;
+            const didPalmSwipe = detectOpenPalmSwipe(hand, isFist, nextPinching);
+            if (didPalmSwipe) nextPinching = false;
             cursor.classList.add("is-visible");
             updateCursor(x, y, nextPinching);
             if (nextPinching && !pinching) beginPinch(x, y);

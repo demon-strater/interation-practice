@@ -1065,19 +1065,57 @@ function bindCatalogReorder() {
     });
 }
 
+let pageTransitionToken = 0;
+
 function showPage(pageName) {
     const pageStack = document.getElementById("pageStack");
+    const views = [...document.querySelectorAll(".page-view")];
+    const currentView = views.find((view) => !view.hidden && view.classList.contains("is-active"));
+    const nextView = views.find((view) => view.dataset.page === pageName);
+    document.body.classList.toggle("is-opening-page", pageName === "opening");
+    if (!nextView || currentView === nextView) return;
+    const pageOrder = views.map((view) => view.dataset.page);
+    const direction = pageOrder.indexOf(pageName) > pageOrder.indexOf(currentView?.dataset.page) ? 1 : -1;
+    const token = ++pageTransitionToken;
+
     if (pageStack) {
         pageStack.dataset.page = pageName;
     }
 
-    document.querySelectorAll(".page-view").forEach((view) => {
+    views.forEach((view) => {
         const isActive = view.dataset.page === pageName;
         view.classList.toggle("is-active", isActive);
-        view.hidden = !isActive;
-        view.style.display = isActive ? "flex" : "none";
+        if (isActive) {
+            view.hidden = false;
+            view.style.display = "flex";
+        } else if (view !== currentView) {
+            view.hidden = true;
+            view.style.display = "none";
+        }
         view.setAttribute("aria-hidden", isActive ? "false" : "true");
     });
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (currentView && !reduceMotion) {
+        pageStack?.classList.add("is-transitioning");
+        const outgoing = currentView.animate([
+            { transform: "translateX(0)", opacity: 1 },
+            { transform: `translateX(${-direction * 12}%)`, opacity: 0 }
+        ], { duration: 380, easing: "cubic-bezier(.4,0,.2,1)", fill: "forwards" });
+        nextView.animate([
+            { transform: `translateX(${direction * 18}%)`, opacity: 0 },
+            { transform: "translateX(0)", opacity: 1 }
+        ], { duration: 460, easing: "cubic-bezier(.22,1,.36,1)", fill: "both" });
+        outgoing.finished.catch(() => {}).then(() => {
+            if (token !== pageTransitionToken) return;
+            currentView.hidden = true;
+            currentView.style.display = "none";
+            pageStack?.classList.remove("is-transitioning");
+        });
+    } else if (currentView) {
+        currentView.hidden = true;
+        currentView.style.display = "none";
+    }
 
     document.querySelectorAll(".page-tab").forEach((button) => {
         const isActive = button.dataset.pageTarget === pageName;
@@ -1085,7 +1123,7 @@ function showPage(pageName) {
         button.setAttribute("aria-pressed", isActive ? "true" : "false");
     });
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
 }
 
 function renderInventory() {
