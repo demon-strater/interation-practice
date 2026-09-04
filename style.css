@@ -528,6 +528,9 @@ body::after {
     --tilt-x: 0deg;
     --tilt-y: 0deg;
     position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% calc(-50% - 22px);
     width: min(62vw, 300px, calc((100svh - 255px) * 0.72));
     aspect-ratio: 576 / 768;
     border: 0;
