@@ -1014,8 +1014,9 @@ body::after {
 
 .hand-status {
     position: fixed;
-    top: 266px;
+    top: auto;
     right: 24px;
+    bottom: 214px;
     z-index: 10020;
     max-width: min(360px, calc(100vw - 44px));
     padding: 9px 12px;
@@ -1033,8 +1034,9 @@ body::after {
 .hand-status.is-error { color: #ffb3bd; }
 .hand-camera {
     position: fixed;
-    top: 76px;
+    top: auto;
     right: 24px;
+    bottom: 20px;
     z-index: 10018;
     width: min(240px, calc(100vw - 48px));
     aspect-ratio: 4 / 3;
@@ -2078,6 +2080,16 @@ body::after {
     .pack-panel::after { inset: 58px 8px 8px; }
     .pack-panel .panel-header { gap: 8px; }
     .pack-panel .action-button { flex: 0 0 auto; padding: 9px 13px; font-size: 0.68rem; }
+    .hand-camera {
+        right: 12px;
+        bottom: 12px;
+        width: min(164px, 42vw);
+    }
+    .hand-status {
+        right: 12px;
+        bottom: calc(min(164px, 42vw) * 0.75 + 24px);
+        max-width: min(300px, calc(100vw - 24px));
+    }
 }
 
 body.is-opening-page {

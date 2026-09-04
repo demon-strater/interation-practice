@@ -50,9 +50,9 @@ const FLAVOR_BY_RARITY = {
 
 const GITHUB_CONTENTS_API = "https://api.github.com/repos/demon-strater/interation-practice/contents?ref=main";
 const DEFAULT_CARD_ART = "";
-const DEFAULT_CARD_BACK = "";
+const DEFAULT_CARD_BACK = "back.png";
 const DEFAULT_CARD_BACK_KEYWORD = "back";
-const DEFAULT_PACK_ART = "";
+const DEFAULT_PACK_ART = "pack.png";
 const KOREAN_CARD_NAME_TO_ID = {
     "나비에스토크스방정식": "navier_stokes",
     "벨의부등식": "bell_inequality",
