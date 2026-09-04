@@ -1013,6 +1013,7 @@ body::after {
 }
 
 .hand-status {
+    display: none !important;
     position: fixed;
     top: auto;
     right: 24px;

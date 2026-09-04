@@ -669,7 +669,8 @@ function rollRarity() {
 
 function drawCardByRarity(rarity, excludedIds = new Set()) {
     const illustratedCards = library.filter((formula) => Boolean(formula.artwork));
-    const availableCards = illustratedCards.filter((formula) => !excludedIds.has(formula.id));
+    const sourceCards = illustratedCards.length ? illustratedCards : library;
+    const availableCards = sourceCards.filter((formula) => !excludedIds.has(formula.id));
     const pool = availableCards.filter((formula) => formula.rarity === rarity);
     if (pool.length) {
         return pool[Math.floor(Math.random() * pool.length)];
