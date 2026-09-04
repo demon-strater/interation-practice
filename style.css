@@ -1978,6 +1978,7 @@ body::after {
 
 .hero-copy::before { left: 50%; }
 .glitch { font-size: clamp(2.75rem, 4.8vw, 4.35rem); }
+.glitch { transform: translateX(14px); }
 
 .page-nav {
     justify-content: center;
@@ -2055,6 +2056,8 @@ body::after {
         gap: 8px;
         text-align: center;
     }
+
+    .glitch { transform: translateX(7px); }
 
     .page-nav {
         display: grid;

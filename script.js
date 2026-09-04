@@ -53,6 +53,36 @@ const DEFAULT_CARD_ART = "";
 const DEFAULT_CARD_BACK = "back.png";
 const DEFAULT_CARD_BACK_KEYWORD = "back";
 const DEFAULT_PACK_ART = "pack.png";
+const BUNDLED_CARD_ARTWORK = [
+    "2.오일러 항등식.png",
+    "3.오일러-라그랑주 방정식.png",
+    "4.질량-애너지 보존의 원리.png",
+    "5.디렉 방정식.png",
+    "6.멕스웰 방정식.png",
+    "7.중심 극한 정리.png",
+    "8.미적분학의 기본 정리.png",
+    "10.벨의 부등식.png",
+    "11. 세넌 엔트로피.png",
+    "12.표준 모형 라그랑지안.png",
+    "13.푸앵카레 추측.png",
+    "14.나비에-스토크스 방정식.png",
+    "15.RSA 암호 알고리즘.png",
+    "16.가우스-보네 정리.png",
+    "16.뉴턴의 만유인력 법칙.png",
+    "17.오일러의 다면체 정리.png",
+    "18.블랙-숄즈_공식.png",
+    "19.페이지랭크_알고리즘.png",
+    "20.심플렉스_알고리즘.png",
+    "21.아르키메데스의_원리.png",
+    "22.캐플러의 법칙.png",
+    "23.옴의 법칙.png",
+    "24.쿨롱의_법칙.png",
+    "25.훅의_법칙.png",
+    "26.피타고라스 정리.png",
+    "27.스넬의_법칙.png",
+    "28.도플러 효과 공식.png",
+    "29.내시 균형.png",
+];
 const KOREAN_CARD_NAME_TO_ID = {
     "나비에스토크스방정식": "navier_stokes",
     "벨의부등식": "bell_inequality",
@@ -1128,6 +1158,32 @@ function showPage(pageName) {
     window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
 }
 
+function applyBundledCardArtwork() {
+    const images = BUNDLED_CARD_ARTWORK.map((name) => ({
+        name,
+        key: normalizeImageMatchKey(name),
+        url: name,
+    }));
+    const unusedImages = new Map(images.map((image) => [image.url, image]));
+
+    library.forEach((formula) => {
+        formula.backArtwork = DEFAULT_CARD_BACK;
+        const formulaKeys = getFormulaMatchKeys(formula);
+        const matchedImage = images.find((image) => {
+            const mappedId = KOREAN_CARD_NAME_TO_ID[image.key];
+            return mappedId === formula.id || formulaKeys.has(image.key);
+        });
+        if (!matchedImage) return;
+        formula.artwork = matchedImage.url;
+        unusedImages.delete(matchedImage.url);
+    });
+
+    const fallbackImages = [...unusedImages.values()];
+    library.filter((formula) => !formula.artwork).forEach((formula, index) => {
+        if (fallbackImages[index]) formula.artwork = fallbackImages[index].url;
+    });
+}
+
 function renderInventory() {
     const grid = document.getElementById("inventoryGrid");
     if (!grid) return;
@@ -1408,9 +1464,7 @@ function init() {
     // Render immediately from bundled assets. Remote artwork discovery must
     // never block pack interaction or the collected-card catalog.
     applyPackArtwork([]);
-    library.forEach((formula) => {
-        formula.backArtwork = formula.backArtwork || DEFAULT_CARD_BACK;
-    });
+    applyBundledCardArtwork();
     showPage("opening");
     renderCatalog();
     renderInventory();
