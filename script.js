@@ -362,8 +362,7 @@ const state = {
 };
 
 const RIP_OPEN_THRESHOLD = 0.94;
-const RIP_SNAP_THRESHOLD = 0.52;
-const RIP_DRAG_DISTANCE = 240;
+const RIP_SNAP_THRESHOLD = 0.5;
 
 function enrichFormula(formula) {
     const weightedScore = Number(
@@ -1308,6 +1307,7 @@ function bindPackDrag() {
     let startX = 0;
     let startY = 0;
     let baseProgress = 0;
+    let dragDistance = 1;
 
     const updatePackTilt = (clientX, clientY) => {
         const rect = packButton.getBoundingClientRect();
@@ -1323,10 +1323,14 @@ function bindPackDrag() {
 
     packButton.addEventListener("pointerdown", (event) => {
         if (packButton.disabled) return;
+        const rect = packButton.getBoundingClientRect();
+        const localY = event.clientY - rect.top;
+        if (localY > rect.height * 0.34) return;
         pointerDown = true;
         startX = event.clientX;
         startY = event.clientY;
         baseProgress = state.ripProgress;
+        dragDistance = Math.max(1, rect.width);
         updatePackTilt(event.clientX, event.clientY);
         try { packButton.setPointerCapture(event.pointerId); } catch { /* synthetic hand pointer */ }
     });
@@ -1341,7 +1345,7 @@ function bindPackDrag() {
         const offsetY = Math.max(-12, Math.min(18, deltaY * 0.05));
         packButton.style.setProperty("--drag-x", `${offsetX}px`);
         packButton.style.setProperty("--drag-y", `${offsetY}px`);
-        const nextProgress = baseProgress + Math.max(0, deltaX) / RIP_DRAG_DISTANCE;
+        const nextProgress = baseProgress + Math.max(0, deltaX) / dragDistance;
         updatePackOpenState(nextProgress);
         if (nextProgress >= RIP_SNAP_THRESHOLD) {
             pointerDown = false;
