@@ -1645,12 +1645,19 @@ body::after {
     }
 
     .page-nav {
-        gap: 10px;
+        flex-wrap: nowrap;
+        gap: clamp(12px, 4vw, 24px);
+        width: 100%;
     }
 
     .page-tab {
-        width: 100%;
+        width: auto;
+        min-width: 0;
+        flex: 0 1 auto;
         text-align: center;
+        font-size: clamp(0.6rem, 2.5vw, 0.78rem);
+        letter-spacing: clamp(0.05em, 1.2vw, 0.13em);
+        white-space: nowrap;
     }
 
     .page-view {
