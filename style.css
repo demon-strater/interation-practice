@@ -577,6 +577,10 @@ body::after {
     animation: packShake 0.26s ease-out both;
 }
 
+.booster-pack.is-snapping-open {
+    filter: drop-shadow(0 30px 38px rgba(117, 92, 228, 0.34));
+}
+
 .booster-pack.is-opened {
     animation: packVanish 0.72s ease-out forwards;
 }

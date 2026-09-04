@@ -358,9 +358,11 @@ const state = {
     pendingPack: [],
     ripProgress: 0,
     isOpening: false,
+    isSnappingOpen: false,
 };
 
 const RIP_OPEN_THRESHOLD = 0.94;
+const RIP_SNAP_THRESHOLD = 0.52;
 const RIP_DRAG_DISTANCE = 240;
 
 function enrichFormula(formula) {
@@ -1167,6 +1169,7 @@ function resetPackUI() {
     packButton.disabled = false;
     packButton.style.pointerEvents = "auto";
     packButton.hidden = false;
+    state.isSnappingOpen = false;
     packButton.style.setProperty("--drag-x", "0px");
     packButton.style.setProperty("--drag-y", "0px");
     updatePackOpenState(0);
@@ -1268,6 +1271,32 @@ function openPack() {
     }, 520);
 }
 
+function snapOpenPack() {
+    if (state.isOpening || state.isSnappingOpen || state.ripProgress < RIP_SNAP_THRESHOLD) return;
+    const packButton = document.getElementById("ripPackButton");
+    state.isSnappingOpen = true;
+    packButton.style.pointerEvents = "none";
+    packButton.classList.add("is-snapping-open");
+    const startedAt = performance.now();
+    const startProgress = state.ripProgress;
+    const duration = 280;
+
+    const finishTear = (now) => {
+        const elapsed = Math.min(1, (now - startedAt) / duration);
+        const eased = 1 - Math.pow(1 - elapsed, 3);
+        updatePackOpenState(startProgress + (1 - startProgress) * eased);
+        if (elapsed < 1) {
+            requestAnimationFrame(finishTear);
+            return;
+        }
+        packButton.classList.remove("is-snapping-open");
+        state.isSnappingOpen = false;
+        openPack();
+    };
+
+    requestAnimationFrame(finishTear);
+}
+
 function bindPackDrag() {
     const packButton = document.getElementById("ripPackButton");
     let pointerDown = false;
@@ -1309,9 +1338,9 @@ function bindPackDrag() {
         packButton.style.setProperty("--drag-y", `${offsetY}px`);
         const nextProgress = baseProgress + Math.max(0, deltaX) / RIP_DRAG_DISTANCE;
         updatePackOpenState(nextProgress);
-        if (nextProgress >= RIP_OPEN_THRESHOLD) {
+        if (nextProgress >= RIP_SNAP_THRESHOLD) {
             pointerDown = false;
-            openPack();
+            snapOpenPack();
         }
     });
 
@@ -1319,8 +1348,8 @@ function bindPackDrag() {
         pointerDown = false;
         packButton.style.setProperty("--drag-x", "0px");
         packButton.style.setProperty("--drag-y", "0px");
-        if (!state.isOpening && state.ripProgress >= RIP_OPEN_THRESHOLD) {
-            openPack();
+        if (!state.isOpening && state.ripProgress >= RIP_SNAP_THRESHOLD) {
+            snapOpenPack();
         }
     });
 
@@ -1330,6 +1359,9 @@ function bindPackDrag() {
         packButton.style.setProperty("--drag-y", "0px");
         packButton.style.setProperty("--tilt-x", "0deg");
         packButton.style.setProperty("--tilt-y", "0deg");
+        if (!state.isOpening && state.ripProgress >= RIP_SNAP_THRESHOLD) {
+            snapOpenPack();
+        }
     });
 
     packButton.addEventListener("pointerleave", () => {
@@ -1343,8 +1375,8 @@ function bindPackDrag() {
         updatePackOpenState(Math.min(1, state.ripProgress + 0.22));
         packButton.classList.add("is-ripping");
         setTimeout(() => packButton.classList.remove("is-ripping"), 280);
-        if (state.ripProgress >= RIP_OPEN_THRESHOLD) {
-            openPack();
+        if (state.ripProgress >= RIP_SNAP_THRESHOLD) {
+            snapOpenPack();
         }
     });
 }
