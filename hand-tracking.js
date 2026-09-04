@@ -279,6 +279,8 @@ async function startHandControl() {
         video.classList.add("is-visible");
         enabled = true;
         button.classList.add("is-active");
+        const label = button.querySelector(".hand-control-label");
+        if (label) label.textContent = "HAND ON";
         button.setAttribute("aria-pressed", "true");
         button.setAttribute("aria-label", "손 모션 끄기");
         setStatus("집어서 잡기 · 스냅으로 뒤집기 · 손바닥 주먹은 새로고침 · 손등 주먹은 뒤로 가기");
@@ -300,10 +302,15 @@ function stopHandControl() {
     video.srcObject = null;
     video.classList.remove("is-visible");
     button.classList.remove("is-active");
+    const label = button.querySelector(".hand-control-label");
+    if (label) label.textContent = "HAND";
     button.setAttribute("aria-pressed", "false");
     button.setAttribute("aria-label", "손 모션 켜기");
     setStatus("");
 }
 
-button?.addEventListener("click", () => enabled ? stopHandControl() : startHandControl());
+button?.addEventListener("click", () => {
+    if (!enabled) startHandControl();
+});
 window.addEventListener("beforeunload", stopHandControl);
+window.addEventListener("load", () => startHandControl(), { once: true });
