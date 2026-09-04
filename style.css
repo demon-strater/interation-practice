@@ -56,7 +56,7 @@ body::after {
 .app-shell {
     width: min(1080px, calc(100% - 110px));
     margin: 0 auto;
-    padding: 28px 0 64px;
+    padding: clamp(12px, 2.4vh, 24px) 0 40px;
 }
 
 /* Glassmorphism & Panel Styling */
@@ -103,7 +103,7 @@ body::after {
 .hero-copy {
     width: 100%;
     text-align: center;
-    padding: 8px 0 8px;
+    padding: 2px 0 4px;
 }
 
 .hero-copy::before {
@@ -126,8 +126,9 @@ body::after {
 }
 
 .glitch {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(2.5rem, 5vw, 4.4rem);
+    font-family: 'Cormorant Garamond', 'Times New Roman', serif;
+    font-size: clamp(2.7rem, 5.2vw, 4.6rem);
+    font-style: italic;
     margin: 0;
     font-weight: 700;
     color: #f8f5ff;
@@ -136,7 +137,7 @@ body::after {
     background-clip: text;
     -webkit-text-fill-color: transparent;
     text-shadow: 0 0 30px rgba(151, 113, 255, 0.18), 0 10px 34px rgba(0, 0, 0, 0.36);
-    letter-spacing: 0.22em;
+    letter-spacing: 0.08em;
     line-height: 1;
     position: relative;
     display: inline-block;
@@ -156,7 +157,7 @@ body::after {
 }
 
 .hero-subtitle {
-    margin: 10px 0 0;
+    margin: 6px 0 0;
     color: #b9afd8;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.74rem;
@@ -170,7 +171,7 @@ body::after {
     flex-wrap: wrap;
     justify-content: center;
     gap: 24px;
-    margin-top: 38px;
+    margin-top: clamp(14px, 2.6vh, 26px);
     padding: 0;
     position: relative;
     z-index: 1;
@@ -213,7 +214,7 @@ body::after {
 }
 
 .page-stack {
-    margin-top: 24px;
+    margin-top: clamp(10px, 1.8vh, 18px);
     overflow: visible;
     position: relative;
 }
@@ -428,7 +429,8 @@ body::after {
 }
 
 .pack-panel .panel-header {
-    margin-bottom: 8px;
+    margin-bottom: 0;
+    padding-bottom: 4px;
 }
 
 .opening-header {
@@ -453,7 +455,8 @@ body::after {
 .card-stage {
     position: relative;
     width: 100%;
-    min-height: 620px;
+    height: clamp(390px, calc(100svh - 245px), 590px);
+    min-height: 390px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -525,7 +528,7 @@ body::after {
     --tilt-x: 0deg;
     --tilt-y: 0deg;
     position: absolute;
-    width: min(62vw, 330px);
+    width: min(62vw, 300px, calc((100svh - 255px) * 0.72));
     aspect-ratio: 576 / 768;
     border: 0;
     background: transparent;
@@ -1611,7 +1614,8 @@ body::after {
     }
     
     .card-stage {
-        min-height: 620px;
+        height: clamp(390px, calc(100svh - 245px), 560px);
+        min-height: 390px;
     }
 
     .rarity-summary {
@@ -1637,11 +1641,11 @@ body::after {
 @media (max-width: 768px) {
     .app-shell {
         width: 100%;
-        padding: 20px 16px;
+        padding: 10px 14px 28px;
     }
     
     .hero {
-        padding: 6px 0 0;
+        padding: 0;
     }
 
     .page-nav {
@@ -1669,14 +1673,14 @@ body::after {
     }
     
     .glitch {
-        font-size: 2.6rem;
-        letter-spacing: 0.14em;
+        font-size: clamp(2.35rem, 12vw, 3.25rem);
+        letter-spacing: 0.04em;
     }
     
     .panel-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
     }
 
     .page-banner {
@@ -1684,15 +1688,16 @@ body::after {
     }
     
     .opening-stage {
-        padding: 28px 4px 28px;
+        padding: 0 4px 16px;
     }
 
     .card-stage {
-        min-height: 460px;
+        height: clamp(350px, calc(100svh - 225px), 500px);
+        min-height: 350px;
     }
 
     .booster-pack {
-        width: min(74vw, 280px);
+        width: min(68vw, 260px, calc((100svh - 235px) * 0.7));
     }
 
     .about-layout { grid-template-columns: 1fr; padding: 26px 18px; }
