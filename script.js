@@ -792,16 +792,47 @@ function createCardElement(formula, options = {}) {
     `;
     
     node.querySelector(".card-flavor").textContent = formula.flavor;
-    node.title = hasBackFace ? `${formula.name} - click to flip` : formula.name;
+    node.title = hasBackFace ? `${formula.name} - drag sideways to flip` : formula.name;
+    let flipAngle = 0;
+    let dragStartX = 0;
+    let dragStartAngle = 0;
+    let isFlipDragging = false;
+    let didFlipDrag = false;
+    let activeFlipPointerId = null;
+
+    node.draggable = false;
+
+    const setFlipAngle = (angle) => {
+        flipAngle = Math.max(0, Math.min(180, angle));
+        node.style.setProperty("--flip-angle", `${flipAngle.toFixed(2)}deg`);
+        // Explicitly fade the large composited face near edge-on. Some browsers
+        // otherwise leave its dark GPU backing layer over neighbouring cards.
+        const distanceFromEdge = Math.abs(flipAngle - 90);
+        const faceVisibility = Math.min(1, distanceFromEdge / 12);
+        const edgeVisibility = Math.max(0, 1 - distanceFromEdge / 10);
+        node.style.setProperty("--face-visibility", faceVisibility.toFixed(3));
+        node.style.setProperty("--edge-visibility", edgeVisibility.toFixed(3));
+        const showingBack = flipAngle > 90;
+        node.classList.toggle("is-flipped", showingBack);
+        node.setAttribute("aria-pressed", showingBack ? "true" : "false");
+    };
 
     const toggleFlip = () => {
         if (!hasBackFace) return;
-        node.classList.toggle("is-flipped");
-        node.setAttribute("aria-pressed", node.classList.contains("is-flipped") ? "true" : "false");
+        setFlipAngle(flipAngle > 90 ? 0 : 180);
     };
 
-    node.addEventListener("click", () => {
-        toggleFlip();
+    node.addEventListener("pointerdown", (event) => {
+        if (!hasBackFace || event.button !== 0) return;
+        isFlipDragging = true;
+        didFlipDrag = false;
+        activeFlipPointerId = event.pointerId;
+        dragStartX = event.clientX;
+        dragStartAngle = flipAngle;
+        node.classList.add("is-flip-dragging");
+        try { node.setPointerCapture(event.pointerId); } catch { /* synthetic hand pointer */ }
+        window.addEventListener("pointerup", finishFlipDrag, true);
+        window.addEventListener("pointercancel", finishFlipDrag, true);
     });
 
     node.addEventListener("dblclick", (event) => {
@@ -817,8 +848,14 @@ function createCardElement(formula, options = {}) {
         }
     });
 
-    // 3D Tilt Effect
+    // Continuous drag rotation plus a light hover tilt.
     node.addEventListener("pointermove", (e) => {
+        if (isFlipDragging) {
+            const deltaX = e.clientX - dragStartX;
+            if (Math.abs(deltaX) > 3) didFlipDrag = true;
+            setFlipAngle(dragStartAngle + deltaX * 0.9);
+            return;
+        }
         if (node.classList.contains("is-flipped")) return;
         const rect = node.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -836,7 +873,37 @@ function createCardElement(formula, options = {}) {
         node.style.transform = `perspective(1000px) translateY(-8px) scale(1.03) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
     });
 
+    const finishFlipDrag = (event) => {
+        if (!isFlipDragging) return;
+        if (activeFlipPointerId !== null && event.pointerId !== activeFlipPointerId) return;
+        isFlipDragging = false;
+        activeFlipPointerId = null;
+        node.classList.remove("is-flip-dragging");
+        window.removeEventListener("pointerup", finishFlipDrag, true);
+        window.removeEventListener("pointercancel", finishFlipDrag, true);
+        if (node.hasPointerCapture(event.pointerId)) node.releasePointerCapture(event.pointerId);
+        if (didFlipDrag) {
+            // Settle on whichever face is closest when the card is released.
+            setFlipAngle(flipAngle >= 90 ? 180 : 0);
+        }
+    };
+
+    node.addEventListener("pointerup", finishFlipDrag);
+    node.addEventListener("pointercancel", finishFlipDrag);
+    node.addEventListener("lostpointercapture", finishFlipDrag);
+    node.addEventListener("dragstart", (event) => event.preventDefault());
+
+    node.addEventListener("click", (event) => {
+        if (didFlipDrag) {
+            event.preventDefault();
+        } else {
+            toggleFlip();
+        }
+        didFlipDrag = false;
+    });
+
     node.addEventListener("pointerleave", () => {
+        if (isFlipDragging) return;
         node.style.transition = "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease";
         node.style.setProperty("--shine-x", "50%");
         node.style.setProperty("--shine-y", "20%");
@@ -932,7 +999,7 @@ function renderCatalog() {
         .map((formula) => {
             const card = createCardElement(formula);
             card.dataset.formulaId = formula.id;
-            card.draggable = true;
+            card.draggable = false;
             if (!ownedIds.has(formula.id)) {
                 card.classList.add("is-unowned");
             }
@@ -1189,7 +1256,7 @@ function bindPackDrag() {
         startY = event.clientY;
         baseProgress = state.ripProgress;
         updatePackTilt(event.clientX, event.clientY);
-        packButton.setPointerCapture(event.pointerId);
+        try { packButton.setPointerCapture(event.pointerId); } catch { /* synthetic hand pointer */ }
     });
 
     packButton.addEventListener("pointermove", (event) => {

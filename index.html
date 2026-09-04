@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>마테마티카</title>
-  <link rel="stylesheet" href="style.css?v=20260321-15">
+  <link rel="stylesheet" href="style.css?v=20260904-1">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -16,6 +16,7 @@
         <nav class="page-nav" aria-label="Section navigation">
           <button class="page-tab is-active" type="button" data-page-target="opening" aria-pressed="true">Pack Opening</button>
           <button class="page-tab" type="button" data-page-target="catalog">Collected Cards</button>
+          <button class="page-tab" type="button" data-page-target="about">About</button>
         </nav>
       </div>
     </header>
@@ -71,8 +72,48 @@
         <p id="catalogEmptyState" class="empty-state hidden">아직 뽑은 카드가 없습니다. Pack Opening에서 먼저 카드를 열어보세요.</p>
         </section>
       </section>
+
+      <section class="page-view" data-page="about" aria-label="About Mathematica" hidden>
+        <section class="panel about-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">ABOUT MATHEMATICA</h2>
+          </div>
+          <div class="about-layout">
+            <div class="about-story">
+              <p class="about-eyebrow">AN INTERACTIVE MATHEMATICAL ARCHIVE</p>
+              <h3>수학의 위대한 순간을<br>한 장의 카드에 담았습니다.</h3>
+              <p>마테마티카는 공식과 법칙, 정리 뒤에 숨은 역사와 의미를 카드팩을 여는 경험으로 만나는 인터랙티브 컬렉션입니다.</p>
+              <p>직접 팩을 열고 카드를 뒤집으며 발견의 순간을 즐겨보세요. 수집한 카드는 나만의 아카이브에 차곡차곡 기록됩니다.</p>
+              <div class="creator-note">
+                <span>FROM THE CREATOR</span>
+                <p>어렵게 느껴질 수 있는 수학을 더 직관적이고 즐거운 방식으로 경험하게 하고 싶어 만든 프로젝트입니다. 작은 호기심이 새로운 발견으로 이어지기를 바랍니다.</p>
+              </div>
+            </div>
+
+            <aside class="about-access" aria-label="휴대폰 접속 안내">
+              <p class="about-access-label">TAKE THE ARCHIVE WITH YOU</p>
+              <a class="about-qr" href="https://demon-strater.github.io/interation-practice/" target="_blank" rel="noopener" aria-label="마테마티카 사이트 열기">
+                <img src="site-qr.png" alt="마테마티카 휴대폰 접속 QR 코드" width="360" height="360">
+              </a>
+              <strong>휴대폰 카메라로 스캔하세요</strong>
+              <p>같은 경험을 모바일에서도 바로 이어갈 수 있습니다.</p>
+              <a class="about-site-link" href="https://demon-strater.github.io/interation-practice/" target="_blank" rel="noopener">
+                demon-strater.github.io/interation-practice
+              </a>
+            </aside>
+          </div>
+        </section>
+      </section>
     </main>
   </div>
+
+  <button id="handControlButton" class="hand-control-button" type="button" aria-pressed="false" aria-label="손 모션 켜기">
+    <span class="hand-control-dot" aria-hidden="true"></span>
+    <span class="hand-control-label">HAND</span>
+  </button>
+  <div id="handStatus" class="hand-status" role="status" aria-live="polite"></div>
+  <video id="handCamera" class="hand-camera" autoplay muted playsinline aria-hidden="true"></video>
+  <div id="handCursor" class="hand-cursor" aria-hidden="true"></div>
 
   <div id="cardModal" class="card-modal hidden" aria-hidden="true">
     <div class="card-modal-backdrop" data-close-modal="true"></div>
@@ -156,7 +197,8 @@
     </article>
   </template>
 
-  <script src="script.js?v=20260321-15"></script>
+  <script src="script.js?v=20260903-3"></script>
+  <script type="module" src="hand-tracking.js?v=20260903-6"></script>
 </body>
 </html>
 
