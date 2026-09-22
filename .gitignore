@@ -5,3 +5,6 @@
 .local-server.runtime.log
 .server-err.log
 .server-out.log
+.server.log
+debug.log
+.tmp-static-server.js

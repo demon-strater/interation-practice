@@ -20,13 +20,18 @@ let movedDistance = 0;
 let lastVideoTime = -1;
 let snapArmedAt = 0;
 let lastSnapAt = 0;
+let snapTarget = null;
+let snapStartX = 0;
+let snapStartY = 0;
 let fistStartedAt = 0;
 let fistTriggered = false;
-let lastHoveredCard = null;
 let openPalmSamples = [];
 let lastPalmSwipeAt = 0;
 const pointerId = 9876;
 const PAGE_ORDER = ["opening", "catalog", "about"];
+const DRAG_START_PX = 24;
+const PINCH_START_DISTANCE = 0.48;
+const PINCH_RELEASE_DISTANCE = 0.56;
 
 function setStatus(message, isError = false) {
     status.textContent = message;
@@ -54,13 +59,23 @@ function updateCursor(x, y, isPinching) {
     cursor.classList.toggle("is-pinching", isPinching);
 }
 
-function beginPinch(x, y) {
+function findInteractiveTarget(x, y) {
+    const selector = ".tcg-card, .booster-pack, button, [role='button'], a, input, select";
+    const offsets = [[0, 0], [-18, 0], [18, 0], [0, -18], [0, 18]];
+    for (const [offsetX, offsetY] of offsets) {
+        const target = document.elementFromPoint(x + offsetX, y + offsetY)?.closest(selector);
+        if (target) return target;
+    }
+    return null;
+}
+
+function beginPinch(x, y, targetOverride = null) {
     pinching = true;
     pinchStartX = x;
     pinchStartY = y;
     previousY = y;
     movedDistance = 0;
-    activeTarget = document.elementFromPoint(x, y);
+    activeTarget = targetOverride || document.elementFromPoint(x, y);
     const interactive = activeTarget?.closest(".tcg-card, .booster-pack, button, [role='button'], a, input, select");
     activeTarget = interactive || null;
     if (activeTarget) {
@@ -85,7 +100,6 @@ function endPinch(x, y) {
     if (activeTarget) {
         dispatchPointer(activeTarget, "pointerup", x, y);
         activeTarget.classList.remove("is-hand-held");
-        if (movedDistance < 14) activeTarget.click();
     }
     pinching = false;
     activeTarget = null;
@@ -95,36 +109,80 @@ function releaseGesture() {
     if (pinching) endPinch(pinchStartX, previousY);
     fistStartedAt = 0;
     fistTriggered = false;
+    snapArmedAt = 0;
+    snapTarget = null;
+    snapStartX = 0;
+    snapStartY = 0;
     openPalmSamples = [];
     cursor.classList.remove("is-visible", "is-pinching", "is-fist");
 }
 
-function detectSnap(hand, palmWidth, x, y) {
+function updateIndexGesture(hand, palmWidth, x, y, isFist) {
     const now = performance.now();
     const thumb = hand[4];
-    const middle = hand[12];
-    const middleDistance = Math.hypot(thumb.x - middle.x, thumb.y - middle.y) / palmWidth;
+    const index = hand[8];
+    const indexDistance = Math.hypot(thumb.x - index.x, thumb.y - index.y) / palmWidth;
+    // Once a gesture starts, keep it alive across small landmark fluctuations.
+    const gestureStarted = snapArmedAt > 0 || pinching;
+    const fingersTogether = indexDistance < (gestureStarted ? PINCH_RELEASE_DISTANCE : PINCH_START_DISTANCE);
 
-    if (middleDistance < 0.52) {
-        snapArmedAt = now;
-        return false;
+    if (isFist) {
+        if (pinching) endPinch(x, y);
+        snapArmedAt = 0;
+        snapTarget = null;
+        snapStartX = 0;
+        snapStartY = 0;
+        return { isActive: false, didClick: false };
     }
 
-    const snapped = snapArmedAt > 0 && now - snapArmedAt < 700 && middleDistance > 0.64;
-    if (!snapped || pinching || now - lastSnapAt < 650) {
-        if (snapArmedAt && now - snapArmedAt >= 700) snapArmedAt = 0;
-        return false;
+    if (fingersTogether) {
+        if (!snapArmedAt) {
+            snapArmedAt = now;
+            snapStartX = x;
+            snapStartY = y;
+            snapTarget = findInteractiveTarget(x, y);
+            beginPinch(x, y, snapTarget);
+        }
+        const travel = Math.hypot(x - snapStartX, y - snapStartY);
+        if (pinching && travel >= DRAG_START_PX) {
+            movePinch(x, y);
+        }
+        return { isActive: true, didClick: false };
     }
 
+    const heldFor = snapArmedAt ? now - snapArmedAt : 0;
+    const didDrag = movedDistance >= DRAG_START_PX;
+    if (pinching) endPinch(x, y);
+    const target = snapTarget;
     snapArmedAt = 0;
-    lastSnapAt = now;
-    const card = document.elementFromPoint(x, y)?.closest(".tcg-card") || lastHoveredCard;
-    if (!card || !card.isConnected) return false;
-    card.click();
-    cursor.classList.remove("is-snapping");
-    void cursor.offsetWidth;
-    cursor.classList.add("is-snapping");
-    return true;
+    snapTarget = null;
+    snapStartX = 0;
+    snapStartY = 0;
+    const shouldClick = !didDrag && heldFor > 0 &&
+        now - lastSnapAt >= 180 && target?.isConnected;
+    if (shouldClick) {
+        lastSnapAt = now;
+        target.click();
+        cursor.classList.remove("is-snapping");
+        void cursor.offsetWidth;
+        cursor.classList.add("is-snapping");
+    }
+    return { isActive: false, didClick: Boolean(shouldClick) };
+}
+
+function completePendingClick() {
+    const target = snapTarget;
+    const now = performance.now();
+    const shouldClick = snapArmedAt > 0 && movedDistance < DRAG_START_PX &&
+        target?.isConnected && now - lastSnapAt >= 180;
+    if (shouldClick) {
+        lastSnapAt = now;
+        target.click();
+        cursor.classList.remove("is-snapping");
+        void cursor.offsetWidth;
+        cursor.classList.add("is-snapping");
+    }
+    return Boolean(shouldClick);
 }
 
 function goBackInSite() {
@@ -134,10 +192,18 @@ function goBackInSite() {
         return;
     }
 
-    history.back();
+    const currentPage = document.getElementById("pageStack")?.dataset.page || PAGE_ORDER[0];
+    const currentIndex = PAGE_ORDER.indexOf(currentPage);
+    const previousPage = PAGE_ORDER[currentIndex - 1];
+    if (previousPage) {
+        document.querySelector(`[data-page-target="${previousPage}"]`)?.click();
+        return;
+    }
+
+    if (history.length > 1) history.back();
 }
 
-function detectFist(hand, handedness) {
+function detectFist(hand) {
     const now = performance.now();
     const wrist = hand[0];
     const fingerPairs = [[8, 6], [12, 10], [16, 14], [20, 18]];
@@ -225,29 +291,27 @@ function trackFrame() {
             const index = hand[8];
             const thumb = hand[4];
             const palmWidth = Math.hypot(hand[5].x - hand[17].x, hand[5].y - hand[17].y) || 0.12;
-            const pinchDistance = Math.hypot(index.x - thumb.x, index.y - thumb.y) / palmWidth;
-            const x = (1 - index.x) * window.innerWidth;
-            const y = index.y * window.innerHeight;
-            const hoveredCard = document.elementFromPoint(x, y)?.closest(".tcg-card");
-            if (hoveredCard) lastHoveredCard = hoveredCard;
-            let nextPinching = pinching ? pinchDistance < 0.48 : pinchDistance < 0.38;
-            const didSnap = detectSnap(hand, palmWidth, x, y);
-            const handedness = result.handedness?.[0]?.[0]?.categoryName || "Right";
-            const isFist = didSnap ? false : detectFist(hand, handedness);
-            if (didSnap) {
+            const indexPinchDistance = Math.hypot(index.x - thumb.x, index.y - thumb.y) / palmWidth;
+            // The pinch point is more stable and intuitive than either fingertip alone.
+            const pinchX = (index.x + thumb.x) / 2;
+            const pinchY = (index.y + thumb.y) / 2;
+            const x = (1 - pinchX) * window.innerWidth;
+            const y = pinchY * window.innerHeight;
+            // A pinch often curls the other fingers and can resemble a fist. Give the
+            // index gesture priority while the thumb and index are near each other.
+            const isIndexGesturePose = indexPinchDistance < 0.72 || snapArmedAt > 0 || pinching;
+            const isFist = isIndexGesturePose ? false : detectFist(hand);
+            const indexGesture = updateIndexGesture(hand, palmWidth, x, y, isFist);
+            if (indexGesture.didClick) {
                 fistStartedAt = 0;
                 fistTriggered = false;
                 cursor.classList.remove("is-fist");
             }
-            if (isFist) nextPinching = false;
-            const didPalmSwipe = detectOpenPalmSwipe(hand, isFist, nextPinching);
-            if (didPalmSwipe) nextPinching = false;
+            detectOpenPalmSwipe(hand, isFist, indexGesture.isActive);
             cursor.classList.add("is-visible");
-            updateCursor(x, y, nextPinching);
-            if (nextPinching && !pinching) beginPinch(x, y);
-            else if (nextPinching && pinching) movePinch(x, y);
-            else if (!nextPinching && pinching) endPinch(x, y);
+            updateCursor(x, y, pinching);
         } else {
+            completePendingClick();
             releaseGesture();
         }
     }
@@ -255,7 +319,9 @@ function trackFrame() {
 }
 
 async function startHandControl() {
+    if (enabled || button.disabled) return;
     button.disabled = true;
+    button.setAttribute("aria-busy", "true");
     setStatus("손 인식기를 불러오는 중…");
     try {
         if (!landmarker) {
@@ -265,9 +331,9 @@ async function startHandControl() {
                 baseOptions: { modelAssetPath: HAND_MODEL, delegate: "GPU" },
                 runningMode: "VIDEO",
                 numHands: 1,
-                minHandDetectionConfidence: 0.55,
-                minHandPresenceConfidence: 0.5,
-                minTrackingConfidence: 0.5,
+                minHandDetectionConfidence: 0.45,
+                minHandPresenceConfidence: 0.42,
+                minTrackingConfidence: 0.42,
             });
         }
         stream = await navigator.mediaDevices.getUserMedia({
@@ -280,16 +346,18 @@ async function startHandControl() {
         enabled = true;
         button.classList.add("is-active");
         const label = button.querySelector(".hand-control-label");
-        if (label) label.textContent = "HAND ON";
+        if (label) label.textContent = "hand";
         button.setAttribute("aria-pressed", "true");
-        button.setAttribute("aria-label", "손 모션 끄기");
-        setStatus("집어서 잡기 · 스냅으로 뒤집기 · 손바닥 주먹은 새로고침 · 손등 주먹은 뒤로 가기");
+        button.setAttribute("aria-label", "카메라 끄기");
+        setStatus("검지+엄지를 짧게 모으면 클릭 · 길게 모은 채 움직이면 드래그 · 주먹을 쥐면 뒤로 가기");
         animationFrame = requestAnimationFrame(trackFrame);
     } catch (error) {
         console.error("Hand tracking could not start", error);
+        stopHandControl();
         setStatus("손 인식을 시작하지 못했습니다. 카메라 권한과 인터넷 연결을 확인해 주세요.", true);
     } finally {
         button.disabled = false;
+        button.removeAttribute("aria-busy");
     }
 }
 
@@ -299,18 +367,19 @@ function stopHandControl() {
     releaseGesture();
     stream?.getTracks().forEach((track) => track.stop());
     stream = null;
+    lastVideoTime = -1;
     video.srcObject = null;
     video.classList.remove("is-visible");
     button.classList.remove("is-active");
     const label = button.querySelector(".hand-control-label");
-    if (label) label.textContent = "HAND";
+    if (label) label.textContent = "hand";
     button.setAttribute("aria-pressed", "false");
-    button.setAttribute("aria-label", "손 모션 켜기");
+    button.setAttribute("aria-label", "카메라 켜기");
     setStatus("");
 }
 
 button?.addEventListener("click", () => {
-    if (!enabled) startHandControl();
+    if (enabled) stopHandControl();
+    else startHandControl();
 });
 window.addEventListener("beforeunload", stopHandControl);
-window.addEventListener("load", () => startHandControl(), { once: true });

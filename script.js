@@ -392,7 +392,8 @@ const state = {
 };
 
 const RIP_OPEN_THRESHOLD = 0.94;
-const RIP_SNAP_THRESHOLD = 0.5;
+// A short pull across the pack's top seam should be enough to tear it open.
+const RIP_SNAP_THRESHOLD = 0.08;
 
 function enrichFormula(formula) {
     const weightedScore = Number(
@@ -610,14 +611,6 @@ function rarityIndex(rarity) {
     return RARITY_ORDER.indexOf(rarity);
 }
 
-function thresholdCenter(rarity) {
-    if (rarity === "Legendary") return 98;
-    if (rarity === "Platinum") return 91;
-    if (rarity === "Gold") return 81;
-    if (rarity === "Silver") return 68;
-    return 50;
-}
-
 function getInventoryGroups() {
     const groups = new Map();
     state.inventory.forEach((entry) => {
@@ -705,9 +698,8 @@ function drawCardByRarity(rarity, excludedIds = new Set()) {
     if (pool.length) {
         return pool[Math.floor(Math.random() * pool.length)];
     }
-    return availableCards
-        .slice()
-        .sort((a, b) => Math.abs(a.weightedScore - thresholdCenter(rarity)) - Math.abs(b.weightedScore - thresholdCenter(rarity)))[0];
+    if (!availableCards.length) return null;
+    return availableCards[Math.floor(Math.random() * availableCards.length)];
 }
 
 function createPack() {
@@ -1284,6 +1276,16 @@ function revealPack(cards) {
         shell.className = `spread-card card-slot-${index}${cards.length === 5 ? '-5' : ''}`;
         
         const node = createCardElement(card, { featured: card.id === bestCard.id });
+        const bringToFront = () => {
+            spreadFan.querySelector(".is-front")?.classList.remove("is-front");
+            shell.classList.add("is-front");
+        };
+        node.addEventListener("click", (event) => {
+            if (!event.defaultPrevented) bringToFront();
+        });
+        node.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") bringToFront();
+        });
         shell.append(node);
         spreadFan.append(shell);
         requestAnimationFrame(() => {

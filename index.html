@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>마테마티카</title>
-  <link rel="stylesheet" href="style.css?v=20260904-20">
+  <link rel="stylesheet" href="style.css?v=20260910-4">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -106,9 +106,9 @@
     </main>
   </div>
 
-  <button id="handControlButton" class="hand-control-button" type="button" aria-pressed="false" aria-label="손 모션 켜기">
+  <button id="handControlButton" class="hand-control-button" type="button" aria-pressed="false" aria-label="카메라 켜기">
     <span class="hand-control-dot" aria-hidden="true"></span>
-    <span class="hand-control-label">HAND</span>
+    <span class="hand-control-label">hand</span>
   </button>
   <div id="handStatus" class="hand-status" role="status" aria-live="polite"></div>
   <video id="handCamera" class="hand-camera" autoplay muted playsinline aria-hidden="true"></video>
@@ -120,10 +120,12 @@
       <button id="closeModalButton" class="card-modal-close" type="button" aria-label="Close details">×</button>
       <div class="card-modal-layout">
         <div class="card-modal-visual">
+          <span class="modal-exhibit-label">MATHEMATICA / COLLECTION</span>
           <div id="modalCard3d" class="modal-card-3d"></div>
+          <span class="modal-exhibit-caption">수학으로 기록한 세계</span>
         </div>
         <div class="card-modal-info">
-          <p class="modal-kicker">카드 아카이브</p>
+          <p class="modal-kicker">THE MATHEMATICA ARCHIVE</p>
           <h3 id="modalTitle"></h3>
           <div class="modal-badges">
             <span id="modalRarity" class="rarity-chip"></span>
@@ -147,7 +149,7 @@
             <h4>의미</h4>
             <p id="modalSignificance"></p>
           </div>
-          <div class="modal-section">
+          <div class="modal-section modal-section-wide">
             <h4>카드 지표</h4>
             <div id="modalStats" class="modal-stats"></div>
           </div>
@@ -196,8 +198,8 @@
     </article>
   </template>
 
-  <script src="script.js?v=20260904-19"></script>
-  <script type="module" src="hand-tracking.js?v=20260904-11"></script>
+  <script src="script.js?v=20260910-2"></script>
+  <script type="module" src="hand-tracking.js?v=20260910-4"></script>
 </body>
 </html>
 
