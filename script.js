@@ -395,6 +395,26 @@ const RIP_OPEN_THRESHOLD = 0.94;
 // A short pull across the pack's top seam should be enough to tear it open.
 const RIP_SNAP_THRESHOLD = 0.08;
 
+// Tear geometry, in % of the pack box. The pack art spans ~14.4%-85.6% across at the seam.
+const TEAR_SEAM_Y = 16.5;
+const TEAR_START_X = 13;
+const TEAR_END_X = 87;
+const PACK_EDGE_LEFT = 14.6;
+const PACK_EDGE_RIGHT = 85.4;
+const TEAR_POINT_STEP = 0.5;
+// The strip is cut into hinged segments so it can curl up behind the tear front.
+const TEAR_SEGMENT_COUNT = 36;
+const TEAR_BEND_LENGTH = 22;
+// Rip progress at which the tear reaches the far edge; the rest pulls the strip away.
+const TEAR_FRONT_END = 0.82;
+const MOUTH_BAND_TOP = TEAR_SEAM_Y - 4.4;
+const MOUTH_BAND_BOTTOM = TEAR_SEAM_Y + 3.4;
+
+const packTear = {
+    points: [],
+    segments: [],
+};
+
 function enrichFormula(formula) {
     const weightedScore = Number(
         METRIC_KEYS.reduce((sum, key) => sum + formula.metrics[key] * METRIC_WEIGHTS[key], 0).toFixed(1),
@@ -1209,6 +1229,218 @@ function setRipInstructions(text) {
     document.getElementById("ripInstructions").textContent = "";
 }
 
+function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+
+function smoothstep(edge0, edge1, value) {
+    const t = clamp((value - edge0) / (edge1 - edge0), 0, 1);
+    return t * t * (3 - 2 * t);
+}
+
+function toPolygon(coords) {
+    return `polygon(${coords.map(([x, y]) => `${x.toFixed(2)}% ${y.toFixed(2)}%`).join(", ")})`;
+}
+
+// Smooth random curve: random values every `spacing`% blended together.
+function createNoiseCurve(spacing, amplitude) {
+    const knots = Array.from({ length: Math.ceil(115 / spacing) + 2 }, () => (Math.random() * 2 - 1) * amplitude);
+    return (x) => {
+        const t = (x + 5) / spacing;
+        const index = Math.floor(t);
+        const blend = smoothstep(0, 1, t - index);
+        return knots[index] * (1 - blend) + knots[index + 1] * blend;
+    };
+}
+
+// A foil tear wanders a little, has fine serrations and the odd fibre spike,
+// and the laminate layers give way at slightly different places along it.
+function generateTearPoints() {
+    const drift = (Math.random() - 0.5) * 1.4;
+    const wander = createNoiseCurve(10, 0.55);
+    const ripple = createNoiseCurve(3, 0.16);
+    const backGap = createNoiseCurve(6, 0.4);
+    const bodyFringe = createNoiseCurve(4, 0.14);
+    const stripFringe = createNoiseCurve(4, 0.12);
+    const film = createNoiseCurve(2.5, 0.5);
+    const spike = (chance, min, spread) => (Math.random() < chance ? min + Math.random() * spread : 0);
+    const points = [];
+
+    for (let i = -2 / TEAR_POINT_STEP; i <= 102 / TEAR_POINT_STEP; i += 1) {
+        const edgePoint = i === -2 / TEAR_POINT_STEP || i === 102 / TEAR_POINT_STEP;
+        const x = i * TEAR_POINT_STEP + (edgePoint ? 0 : (Math.random() - 0.5) * 0.3);
+        let y = TEAR_SEAM_Y + drift * (x / 100 - 0.5) + wander(x) + ripple(x) + (Math.random() - 0.5) * 0.18;
+        y += (Math.random() < 0.5 ? -1 : 1) * spike(0.025, 0.2, 0.25);
+        y = clamp(y, TEAR_SEAM_Y - 2.4, TEAR_SEAM_Y + 2.4);
+        points.push({
+            x,
+            y,
+            bodyFringe: 0.24 + bodyFringe(x) + Math.random() * 0.12 + spike(0.03, 0.25, 0.35),
+            stripFringe: 0.2 + stripFringe(x) + Math.random() * 0.1 + spike(0.025, 0.2, 0.3),
+            film: Math.max(0, film(x)),
+            back: y - (0.95 + backGap(x)) + (Math.random() - 0.5) * 0.16,
+        });
+    }
+    return points;
+}
+
+function tearPointAt(x) {
+    const points = packTear.points;
+    let index = clamp(Math.floor((x + 2) / TEAR_POINT_STEP), 0, points.length - 2);
+    while (index > 0 && points[index].x > x) index -= 1;
+    while (index < points.length - 2 && points[index + 1].x < x) index += 1;
+    const a = points[index];
+    const b = points[index + 1];
+    const t = clamp((x - a.x) / (b.x - a.x), 0, 1);
+    const mix = (key) => a[key] + (b[key] - a[key]) * t;
+    return {
+        x,
+        y: mix("y"),
+        bodyFringe: mix("bodyFringe"),
+        stripFringe: mix("stripFringe"),
+        film: mix("film"),
+        back: mix("back"),
+    };
+}
+
+function tearPointsBetween(x0, x1) {
+    const inner = packTear.points.filter((point) => point.x > x0 && point.x < x1);
+    return [tearPointAt(x0), ...inner, tearPointAt(x1)];
+}
+
+function buildPackTear() {
+    const packButton = document.getElementById("ripPackButton");
+    const stripLayer = packButton.querySelector(".pack-top");
+    const mouth = packButton.querySelector(".pack-mouth");
+
+    packTear.points = generateTearPoints();
+    packTear.segments = [];
+    stripLayer.textContent = "";
+    stripLayer.style.transform = "";
+    stripLayer.style.opacity = "";
+    stripLayer.style.transformOrigin = `${TEAR_END_X}% ${TEAR_SEAM_Y}%`;
+
+    // Body side: exposed white inner layer, a little clear film past it, and the
+    // pack's back panel showing through the mouth once the strip lifts.
+    const edge = tearPointsBetween(PACK_EDGE_LEFT, PACK_EDGE_RIGHT);
+    const edgeReversed = [...edge].reverse();
+    const toMouthBand = (y) => ((y - MOUTH_BAND_TOP) / (MOUTH_BAND_BOTTOM - MOUTH_BAND_TOP)) * 100;
+    packButton.style.setProperty("--tear-edge-clip", toPolygon([
+        ...edge.map((p) => [p.x, p.y]),
+        ...edgeReversed.map((p) => [p.x, p.y + p.bodyFringe]),
+    ]));
+    packButton.style.setProperty("--tear-film-clip", toPolygon([
+        ...edge.map((p) => [p.x, p.y - p.film]),
+        ...edgeReversed.map((p) => [p.x, p.y + 0.05]),
+    ]));
+    packButton.style.setProperty("--tear-mouth-clip", toPolygon([
+        ...edge.map((p) => [p.x, toMouthBand(p.back)]),
+        ...edgeReversed.map((p) => [p.x, toMouthBand(p.y + 0.6)]),
+    ]));
+    packButton.style.setProperty("--tear-mouth-rim-clip", toPolygon([
+        ...edge.map((p) => [p.x, toMouthBand(p.back)]),
+        ...edgeReversed.map((p) => [p.x, toMouthBand(p.back + 0.18 + p.stripFringe * 0.4)]),
+    ]));
+    mouth.style.top = `${MOUTH_BAND_TOP}%`;
+    mouth.style.height = `${MOUTH_BAND_BOTTOM - MOUTH_BAND_TOP}%`;
+
+    // Strip side: segments nested right-to-left, each hinged on the tear line at
+    // its right edge, so rotations accumulate into a curl.
+    const bounds = [-3];
+    for (let k = 1; k < TEAR_SEGMENT_COUNT; k += 1) {
+        bounds.push(TEAR_START_X + ((TEAR_END_X - TEAR_START_X) * k) / TEAR_SEGMENT_COUNT);
+    }
+    bounds.push(103);
+
+    let parent = stripLayer;
+    for (let k = TEAR_SEGMENT_COUNT - 1; k >= 0; k -= 1) {
+        const x0 = bounds[k];
+        const x1 = bounds[k + 1];
+        // Overlap the neighbour slightly so no hairline opens between segments.
+        const overlapX = Math.min(103, x1 + 0.45);
+        const seam = tearPointsBetween(x0, overlapX).reverse();
+
+        const segment = document.createElement("span");
+        segment.className = "tear-segment";
+        segment.style.transformOrigin = `${x1.toFixed(2)}% ${tearPointAt(x1).y.toFixed(2)}%`;
+
+        const art = document.createElement("span");
+        art.className = "tear-segment-art";
+        art.style.clipPath = toPolygon([[x0, -6], [overlapX, -6], ...seam.map((p) => [p.x, p.y])]);
+
+        const fringe = document.createElement("span");
+        fringe.className = "tear-segment-fringe";
+        const fringeStart = Math.max(x0, PACK_EDGE_LEFT);
+        const fringeEnd = Math.min(overlapX, PACK_EDGE_RIGHT);
+        if (fringeEnd > fringeStart) {
+            const fringeEdge = tearPointsBetween(fringeStart, fringeEnd);
+            fringe.style.clipPath = toPolygon([
+                ...fringeEdge.map((p) => [p.x, p.y - p.stripFringe]),
+                ...[...fringeEdge].reverse().map((p) => [p.x, p.y]),
+            ]);
+        } else {
+            fringe.style.clipPath = "inset(100%)";
+        }
+
+        segment.append(art, fringe);
+        parent.append(segment);
+        parent = segment;
+        packTear.segments[k] = { x0, x1, segment, art, fringe, visible: null };
+    }
+}
+
+function renderPackTear(progress) {
+    if (!packTear.segments.length) return;
+    const packButton = document.getElementById("ripPackButton");
+    const body = packButton.querySelector(".pack-body");
+    const stripLayer = packButton.querySelector(".pack-top");
+    const front = clamp(progress / TEAR_FRONT_END, 0, 1);
+    const detach = clamp((progress - TEAR_FRONT_END) / (1 - TEAR_FRONT_END), 0, 1);
+    const frontX = front > 0 ? TEAR_START_X + (TEAR_END_X - TEAR_START_X) * front : -10;
+
+    packButton.style.setProperty("--tear-front", (front >= 1 ? 110 : frontX).toFixed(2));
+
+    // Behind the tear front the body ends at the torn edge; ahead of it the pack is still whole.
+    if (front <= 0) {
+        body.style.clipPath = "";
+    } else {
+        const bodyFrontX = front >= 1 ? 102 : frontX;
+        body.style.clipPath = toPolygon([
+            [-5, tearPointAt(-2).y],
+            ...tearPointsBetween(-2, bodyFrontX).map((p) => [p.x, p.y]),
+            [bodyFrontX, -6],
+            [106, -6],
+            [106, 106],
+            [-5, 106],
+        ]);
+    }
+
+    // The torn part peels up: sharply near the front, straighter towards the free end.
+    const lift = 10 + 28 * front;
+    const angleAt = (x) => (x >= frontX ? 0 : lift * smoothstep(0, TEAR_BEND_LENGTH, frontX - x));
+    let parentAngle = 0;
+    for (let k = TEAR_SEGMENT_COUNT - 1; k >= 0; k -= 1) {
+        const segment = packTear.segments[k];
+        const visible = segment.x0 < frontX;
+        if (segment.visible !== visible) {
+            segment.visible = visible;
+            segment.art.style.visibility = visible ? "visible" : "hidden";
+            segment.fringe.style.visibility = visible ? "visible" : "hidden";
+        }
+        const angle = angleAt(segment.x1);
+        segment.segment.style.transform = `rotate(${(angle - parentAngle).toFixed(3)}deg)`;
+        parentAngle = angle;
+    }
+
+    if (detach > 0) {
+        stripLayer.style.transform = `translate(${(detach * 12).toFixed(2)}%, ${(-detach * 9).toFixed(2)}%) rotate(${(detach * 18).toFixed(2)}deg)`;
+        stripLayer.style.opacity = (1 - smoothstep(0.45, 1, detach)).toFixed(3);
+    } else {
+        stripLayer.style.transform = "";
+        stripLayer.style.opacity = "";
+    }
+}
+
 function resetPackUI() {
     const packButton = document.getElementById("ripPackButton");
     const spreadFan = document.getElementById("spreadFan");
@@ -1220,6 +1452,7 @@ function resetPackUI() {
     state.isSnappingOpen = false;
     packButton.style.setProperty("--drag-x", "0px");
     packButton.style.setProperty("--drag-y", "0px");
+    buildPackTear();
     updatePackOpenState(0);
     spreadFan.innerHTML = "";
     document.getElementById("openingTitle").textContent = "";
@@ -1240,6 +1473,7 @@ function updatePackOpenState(progress) {
     packButton.dataset.ripState = state.ripProgress > 0.02 ? "tearing" : "sealed";
     packButton.style.setProperty("--rip-open", state.ripProgress.toFixed(3));
     packButton.style.setProperty("--card-peek", Math.max(0, (state.ripProgress - 0.92) / 0.08).toFixed(3));
+    renderPackTear(state.ripProgress);
 
     if (state.ripProgress < 0.18) {
         setRipInstructions("");
@@ -1342,11 +1576,12 @@ function snapOpenPack() {
     packButton.classList.add("is-snapping-open");
     const startedAt = performance.now();
     const startProgress = state.ripProgress;
-    const duration = 280;
+    // Long enough to see the tear run across the seam before the strip comes away.
+    const duration = 440;
 
     const finishTear = (now) => {
         const elapsed = Math.min(1, (now - startedAt) / duration);
-        const eased = 1 - Math.pow(1 - elapsed, 3);
+        const eased = 1 - Math.pow(1 - elapsed, 2);
         updatePackOpenState(startProgress + (1 - startProgress) * eased);
         if (elapsed < 1) {
             requestAnimationFrame(finishTear);

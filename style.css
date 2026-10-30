@@ -586,7 +586,7 @@ body::after {
 }
 
 .pack-body,
-.pack-top {
+.tear-segment-art {
     position: absolute;
     inset: 0;
     background-image: var(--pack-art, none);
@@ -594,54 +594,89 @@ body::after {
     background-repeat: no-repeat;
     background-size: contain;
     pointer-events: none;
+}
+
+/* The body's clip-path follows the tear line and is set from script.js. */
+.pack-body {
     filter: saturate(0.98) contrast(1.01);
 }
 
-.pack-body {
-    clip-path: polygon(
-        0 0,
-        100% 0,
-        100% 100%,
-        0 100%
-    );
-    opacity: calc(1 - max(0, var(--rip-open) - 0.08) * 0.08);
-}
-
+/* Torn-off strip: hinged segments built in script.js, curled per frame. */
 .pack-top {
-    opacity: clamp(0, calc((var(--rip-open) - 0.12) * 4), 1);
-    clip-path: polygon(
-        0 0,
-        100% 0,
-        100% 16.5%,
-        56% 16.5%,
-        52.5% calc(16.5% + var(--rip-open) * 2.6%),
-        50% calc(16.5% + var(--rip-open) * 3.2%),
-        47.5% calc(16.5% + var(--rip-open) * 2.6%),
-        44% 16.5%,
-        0 16.5%
-    );
-    transform-origin: 82% 62%;
-    transform:
-        translateX(calc(max(0, var(--rip-open) - 0.12) * 120px))
-        translateY(calc(max(0, var(--rip-open) - 0.12) * -10px))
-        rotateZ(calc(max(0, var(--rip-open) - 0.12) * 22deg))
-        rotateX(calc(max(0, var(--rip-open) - 0.12) * 18deg));
-    filter: saturate(0.98) contrast(1.01) drop-shadow(0 10px 10px rgba(0, 0, 0, 0.16));
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    filter: saturate(0.98) contrast(1.01);
 }
 
-.booster-pack[data-rip-state="tearing"] .pack-body,
-.booster-pack[data-rip-state="opened"] .pack-body {
-    clip-path: polygon(
-        0 16.5%,
-        44% 16.5%,
-        47.5% calc(16.5% + var(--rip-open) * 2.6%),
-        50% calc(16.5% + var(--rip-open) * 3.2%),
-        52.5% calc(16.5% + var(--rip-open) * 2.6%),
-        56% 16.5%,
-        100% 16.5%,
-        100% 100%,
-        0 100%
-    );
+.tear-segment {
+    position: absolute;
+    inset: 0;
+}
+
+.tear-segment-art,
+.tear-segment-fringe {
+    visibility: hidden;
+}
+
+/* Torn layers only show behind the tear front, fading in just behind it. */
+.pack-tear-edge,
+.pack-mouth,
+.tear-segment-fringe {
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(var(--tear-front, -10) * 1% - 2.5%), transparent calc(var(--tear-front, -10) * 1%));
+    mask-image: linear-gradient(90deg, #000 calc(var(--tear-front, -10) * 1% - 2.5%), transparent calc(var(--tear-front, -10) * 1%));
+}
+
+.tear-segment-fringe {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.92), rgba(232, 232, 238, 0.88) 50%, rgba(255, 255, 255, 0.92));
+}
+
+.pack-tear-edge {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.pack-tear-edge::before,
+.pack-tear-edge::after,
+.pack-mouth::before,
+.pack-mouth::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+}
+
+/* Exposed white inner layer along the body's torn edge. */
+.pack-tear-edge::before {
+    clip-path: var(--tear-edge-clip, inset(100%));
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.94), rgba(234, 234, 240, 0.9) 50%, rgba(255, 255, 255, 0.94));
+}
+
+/* Stretched clear film hanging past the edge. */
+.pack-tear-edge::after {
+    clip-path: var(--tear-film-clip, inset(100%));
+    background: rgba(255, 255, 255, 0.34);
+}
+
+/* Inside of the back panel, seen through the opening. Top/height set from script.js. */
+.pack-mouth {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: -2;
+    pointer-events: none;
+}
+
+.pack-mouth::before {
+    clip-path: var(--tear-mouth-clip, inset(100%));
+    background: linear-gradient(180deg, #d4d4da 0%, #9c9ca6 40%, #4a4a54 68%, #19191f 100%);
+}
+
+.pack-mouth::after {
+    clip-path: var(--tear-mouth-rim-clip, inset(100%));
+    background: rgba(242, 242, 246, 0.92);
 }
 
 .pack-contents {
@@ -886,12 +921,17 @@ body::after {
     letter-spacing: 0.2em;
 }
 
+.about-story,
+.about-access {
+    word-break: keep-all;
+}
+
 .about-story h3 {
-    margin: 20px 0 26px;
+    margin: 18px 0 24px;
     color: #faf8ff;
     font-family: 'Cinzel', serif;
-    font-size: clamp(1.9rem, 4vw, 3.55rem);
-    line-height: 1.35;
+    font-size: clamp(1.7rem, 3vw, 2.6rem);
+    line-height: 1.3;
 }
 
 .about-story > p:not(.about-eyebrow) {
@@ -1735,7 +1775,7 @@ body::after {
     }
 
     .about-layout { grid-template-columns: 1fr; padding: 26px 18px; }
-    .about-story h3 { font-size: 1.75rem; }
+    .about-story h3 { font-size: 1.6rem; }
     .about-access { padding: 22px 16px; }
     .about-qr { width: min(200px, 72vw); }
 
