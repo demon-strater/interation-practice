@@ -1416,9 +1416,8 @@ body::after {
     inset: 0;
     border-radius: 7px;
     background-image: var(--card-back-art);
-    /* back.png is slightly wider than 2:3, so fit it to the full card face.
-       The independent dimensions intentionally give it a subtle vertical stretch. */
-    background-size: 102% 102%;
+    /* back.png is exactly 2:3, matching the card face. */
+    background-size: 100% 100%;
     background-repeat: no-repeat;
     background-position: center;
     border: none;

@@ -50,7 +50,7 @@ const FLAVOR_BY_RARITY = {
 
 const GITHUB_CONTENTS_API = "https://api.github.com/repos/demon-strater/interation-practice/contents?ref=main";
 const DEFAULT_CARD_ART = "";
-const DEFAULT_CARD_BACK = "back.png";
+const DEFAULT_CARD_BACK = "back.png?v=20261031";
 const DEFAULT_CARD_BACK_KEYWORD = "back";
 const DEFAULT_PACK_ART = "pack.png";
 const BUNDLED_CARD_ARTWORK = [
