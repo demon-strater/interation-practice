@@ -1684,7 +1684,29 @@ function bindPackDrag() {
     });
 }
 
+// Phones opened from the exhibition QR code show Chrome's address bar and
+// toolbars. Fullscreen needs a user gesture, so request it on the first touch
+// (and again on a later touch if the visitor swiped out of it).
+function bindMobileFullscreen() {
+    const root = document.documentElement;
+    const request = root.requestFullscreen || root.webkitRequestFullscreen;
+    if (!request) return;
+    if (window.matchMedia("(display-mode: fullscreen), (display-mode: standalone)").matches) return;
+
+    document.addEventListener("pointerup", (event) => {
+        if (event.pointerType === "mouse") return;
+        if (document.fullscreenElement || document.webkitFullscreenElement) return;
+        try {
+            const result = request.call(root, { navigationUI: "hide" });
+            result?.catch?.(() => {});
+        } catch {
+            // Fullscreen refused (e.g. iPhone Safari); keep the normal browser view.
+        }
+    }, { passive: true });
+}
+
 function bindEvents() {
+    bindMobileFullscreen();
     document.getElementById("newPackButton").addEventListener("click", prepareNewPack);
     document.getElementById("inventorySort")?.addEventListener("change", renderInventory);
     document.querySelectorAll(".page-tab").forEach((button) => {
