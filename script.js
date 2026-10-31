@@ -1432,13 +1432,43 @@ function renderPackTear(progress) {
         parentAngle = angle;
     }
 
+    // Once free, the strip only drifts; flingPackStrip() throws it off screen.
     if (detach > 0) {
         stripLayer.style.transform = `translate(${(detach * 12).toFixed(2)}%, ${(-detach * 9).toFixed(2)}%) rotate(${(detach * 18).toFixed(2)}deg)`;
-        stripLayer.style.opacity = (1 - smoothstep(0.45, 1, detach)).toFixed(3);
     } else {
         stripLayer.style.transform = "";
-        stripLayer.style.opacity = "";
     }
+}
+
+// The pack itself fades out when opened, which would take the strip with it, so a
+// copy of the strip is lifted into a fixed layer and thrown off the top of the screen.
+function flingPackStrip(packButton) {
+    const strip = packButton.querySelector(".pack-top");
+    if (!strip || !strip.childElementCount) return;
+
+    const rect = packButton.getBoundingClientRect();
+    const width = packButton.offsetWidth;
+    const height = packButton.offsetHeight;
+    const flyer = document.createElement("div");
+    flyer.className = "pack-strip-flyer";
+    flyer.style.left = `${rect.left + rect.width / 2 - width / 2}px`;
+    flyer.style.top = `${rect.top + rect.height / 2 - height / 2}px`;
+    flyer.style.width = `${width}px`;
+    flyer.style.height = `${height}px`;
+    flyer.style.setProperty("--tear-front", "110");
+    flyer.append(strip.cloneNode(true));
+    document.body.append(flyer);
+    strip.style.opacity = "0";
+
+    const dx = window.innerWidth * 0.55 + width * 0.4;
+    const dy = -(rect.bottom + height * 0.6);
+    const animation = flyer.animate([
+        { transform: "translate(0, 0) rotate(0deg)" },
+        { transform: `translate(${dx * 0.3}px, ${dy * 0.18}px) rotate(70deg)`, offset: 0.3 },
+        { transform: `translate(${dx}px, ${dy}px) rotate(400deg)` },
+    ], { duration: 950, easing: "cubic-bezier(0.35, 0.1, 0.55, 1)", fill: "forwards" });
+    animation.onfinish = () => flyer.remove();
+    animation.oncancel = () => flyer.remove();
 }
 
 function resetPackUI() {
@@ -1540,6 +1570,7 @@ function openPack() {
     const cardStage = document.getElementById("cardStage");
     const packButton = document.getElementById("ripPackButton");
     updatePackOpenState(1);
+    flingPackStrip(packButton);
     packButton.dataset.ripState = "opened";
     packButton.classList.add("is-opened");
     packButton.disabled = true;
