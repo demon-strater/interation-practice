@@ -322,6 +322,7 @@ async function startHandControl() {
     if (enabled || button.disabled) return;
     button.disabled = true;
     button.setAttribute("aria-busy", "true");
+    document.getElementById("handControlState").textContent = "연결하는 중…";
     setStatus("손 인식기를 불러오는 중…");
     try {
         if (!landmarker) {
@@ -346,7 +347,8 @@ async function startHandControl() {
         enabled = true;
         button.classList.add("is-active");
         const label = button.querySelector(".hand-control-label");
-        if (label) label.textContent = "hand";
+        if (label) label.textContent = "Hand On";
+        document.getElementById("handControlState").textContent = "손 인식 활성화";
         button.setAttribute("aria-pressed", "true");
         button.setAttribute("aria-label", "카메라 끄기");
         setStatus("검지+엄지를 짧게 모으면 클릭 · 길게 모은 채 움직이면 드래그 · 주먹을 쥐면 뒤로 가기");
@@ -372,7 +374,8 @@ function stopHandControl() {
     video.classList.remove("is-visible");
     button.classList.remove("is-active");
     const label = button.querySelector(".hand-control-label");
-    if (label) label.textContent = "hand";
+    if (label) label.textContent = "Hand";
+    document.getElementById("handControlState").textContent = "손으로 조작하기";
     button.setAttribute("aria-pressed", "false");
     button.setAttribute("aria-label", "카메라 켜기");
     setStatus("");

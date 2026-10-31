@@ -1,8 +1,8 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#131227">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -11,19 +11,31 @@
   <title>마테마티카</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="style.css?v=20261031-7">
+  <link rel="stylesheet" href="style.css?v=20261031-9">
+  <link rel="stylesheet" href="sanctum.css?v=20261031-9">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="icon-star" viewBox="0 0 24 24"><path d="m12 2 2.7 7.3L22 12l-7.3 2.7L12 22l-2.7-7.3L2 12l7.3-2.7Z"/><path d="m5 5 14 14M19 5 5 19"/></symbol>
+    <symbol id="icon-cards" viewBox="0 0 24 24"><rect x="8" y="4" width="12" height="17" rx="2"/><path d="M5 18H4a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h10M14 8v9m-3-4.5h6"/></symbol>
+    <symbol id="icon-hand" viewBox="0 0 24 24"><path d="M8 13V6a1.5 1.5 0 0 1 3 0v6-8a1.5 1.5 0 0 1 3 0v8-6a1.5 1.5 0 0 1 3 0v7-3a1.5 1.5 0 0 1 3 0v6c0 4-2.5 6-6 6h-1c-2 0-3.5-1-5-3l-4-5a1.7 1.7 0 0 1 2.5-2.2L8 13Z"/></symbol>
+    <symbol id="icon-book" viewBox="0 0 24 24"><path d="M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Zm0 0v15M5 8h4M15 8h4M5 12h4M15 12h4"/></symbol>
+  </svg>
+  <div class="ambient-sky" aria-hidden="true"></div>
   <div class="app-shell">
     <header class="hero">
       <div class="hero-copy">
-        <h1 class="glitch" data-text="MATHEMATICA">Mathematica</h1>
+        <div class="brand-lockup">
+          <span class="brand-seal" aria-hidden="true"><svg><use href="#icon-star"/></svg></span>
+          <div><p class="brand-eyebrow">THE ARCHIVE OF WONDERS</p><h1 class="glitch" data-text="MATHEMATICA">Mathematica</h1></div>
+        </div>
         <nav class="page-nav" aria-label="Section navigation">
-          <button class="page-tab is-active" type="button" data-page-target="opening" aria-pressed="true">Pack Opening</button>
-          <button class="page-tab" type="button" data-page-target="catalog">Collected Cards</button>
-          <button class="page-tab" type="button" data-page-target="about">About</button>
+          <button class="page-tab is-active" type="button" data-page-target="opening" aria-pressed="true"><span class="nav-index" aria-hidden="true">I</span><svg aria-hidden="true"><use href="#icon-star"/></svg><span>Pack Opening</span></button>
+          <button class="page-tab" type="button" data-page-target="catalog" aria-pressed="false"><span class="nav-index" aria-hidden="true">II</span><svg aria-hidden="true"><use href="#icon-cards"/></svg><span>Collected Cards</span></button>
+          <button class="page-tab" type="button" data-page-target="about" aria-pressed="false"><span class="nav-index" aria-hidden="true">III</span><svg aria-hidden="true"><use href="#icon-book"/></svg><span>About</span></button>
         </nav>
+        <div class="archive-counter"><svg aria-hidden="true"><use href="#icon-cards"/></svg><div><span>COLLECTION</span><strong id="collectionCount">00 <small>/ 33</small></strong></div></div>
       </div>
     </header>
 
@@ -31,16 +43,20 @@
       <section class="page-view is-active" data-page="opening" aria-label="Pack Opening page">
         <section class="panel pack-panel">
         <div class="panel-header">
-          <h2 class="panel-title">PACK OPENING</h2>
-          <button id="newPackButton" class="action-button glow-button" type="button">New Pack</button>
+          <div class="chapter-heading"><span class="chapter-number">01</span><div><p class="section-eyebrow">THE SUMMONING CHAMBER</p><h2 class="panel-title">Pack Opening</h2></div></div>
+          <span class="edition-tag"><span aria-hidden="true">✧</span> MUSEUM EDITION</span>
         </div>
 
         <div class="opening-stage">
+          <div class="stage-story"><span class="section-eyebrow">A WORLD WRITTEN IN NUMBERS</span><h3>Unseal<br>the <em>extraordinary.</em></h3><p>세상을 바꾼 위대한 발견,<br>봉인된 다섯 장의 카드에 깨어나다.</p><div class="story-rule" aria-hidden="true"><span>✦</span></div><span class="stage-volume">FORMULA RELICS <span>VOL. I</span></span></div>
           <div class="opening-header">
             <h3 id="openingTitle" class="neon-text"></h3>
             <p id="revealMessage" class="sub-text"></p>
           </div>
           <div id="cardStage" class="card-stage">
+            <div class="celestial-orbit" aria-hidden="true">
+              <svg viewBox="0 0 600 600" fill="none"><g class="orbit-outer"><circle cx="300" cy="300" r="282"/><circle cx="300" cy="300" r="270" stroke-dasharray="1 9"/><path d="M300 5v40m0 510v40M5 300h40m510 0h40M91 91l28 28m362 362 28 28M91 509l28-28m362-362 28-28"/><path d="m300 18 7 12-7 12-7-12Zm282 282-12 7-12-7 12-7ZM300 582l-7-12 7-12 7 12ZM18 300l12-7 12 7-12 7Z"/></g><g class="orbit-inner"><circle cx="300" cy="300" r="230"/><path d="m300 70 199 345H101ZM300 530 101 185h398Z"/><rect x="138" y="138" width="324" height="324" transform="rotate(45 300 300)"/><circle cx="300" cy="300" r="184" stroke-dasharray="3 8"/></g><g class="orbit-stars"><circle cx="300" cy="70" r="4"/><circle cx="499" cy="415" r="3"/><circle cx="101" cy="415" r="3"/><circle cx="70" cy="300" r="3"/><circle cx="530" cy="300" r="3"/></g></svg>
+            </div>
             <div class="stage-light"></div>
             <div class="stage-ring"></div>
             <div class="stage-veil"></div>
@@ -59,15 +75,17 @@
             </button>
             <div id="spreadFan" class="spread-fan"></div>
           </div>
+          <aside class="stage-guide"><span class="section-eyebrow">FIVE TIERS OF DISCOVERY</span><ol><li class="tier-legendary"><span>V</span>Legendary<i></i></li><li class="tier-platinum"><span>IV</span>Platinum<i></i></li><li class="tier-gold"><span>III</span>Gold<i></i></li><li class="tier-silver"><span>II</span>Silver<i></i></li><li class="tier-bronze"><span>I</span>Bronze<i></i></li></ol><p>Every formula holds a story.</p></aside>
           <div class="rip-instructions hidden" id="ripInstructions"></div>
         </div>
+        <div class="ritual-caption" aria-live="polite"><span class="ritual-line" aria-hidden="true"></span><div><span id="ritualState" class="section-eyebrow">AWAITING YOUR DISCOVERY</span><p id="ritualHint">팩 상단을 오른쪽으로 드래그하거나 눌러 봉인을 해제하세요</p></div><span class="ritual-line" aria-hidden="true"></span></div>
         </section>
       </section>
 
       <section class="page-view" data-page="catalog" aria-label="Master Catalog page" hidden>
         <section class="panel catalog-panel">
         <div class="panel-header">
-          <h2 class="panel-title">COLLECTED CARDS</h2>
+          <div class="chapter-heading"><span class="chapter-number">02</span><div><p class="section-eyebrow">YOUR CABINET OF WONDERS</p><h2 class="panel-title">Collected Cards</h2></div></div>
           <div class="legend-row">
             <span class="rarity-chip bronze">Bronze</span>
             <span class="rarity-chip silver">Silver</span>
@@ -76,6 +94,7 @@
             <span class="rarity-chip legendary">Legendary</span>
           </div>
         </div>
+        <div class="collection-progress"><span id="collectionSummary">발견한 공식 0 / 33</span><div class="collection-track" role="progressbar" aria-label="공식 수집 진행률" aria-valuemin="0" aria-valuemax="33" aria-valuenow="0"><span id="collectionProgress"></span></div><span>THE MATHEMATICA ARCHIVE</span></div>
         <div id="catalogGrid" class="catalog-grid"></div>
         <p id="catalogEmptyState" class="empty-state hidden">아직 뽑은 카드가 없습니다. Pack Opening에서 먼저 카드를 열어보세요.</p>
         </section>
@@ -84,7 +103,7 @@
       <section class="page-view" data-page="about" aria-label="About Mathematica" hidden>
         <section class="panel about-panel">
           <div class="panel-header">
-            <h2 class="panel-title">ABOUT MATHEMATICA</h2>
+            <div class="chapter-heading"><span class="chapter-number">03</span><div><p class="section-eyebrow">BEYOND THE FORMULAS</p><h2 class="panel-title">The Story of Mathematica</h2></div></div>
           </div>
           <div class="about-layout">
             <div class="about-story">
@@ -115,10 +134,14 @@
     </main>
   </div>
 
-  <button id="handControlButton" class="hand-control-button" type="button" aria-pressed="false" aria-label="카메라 켜기">
-    <span class="hand-control-dot" aria-hidden="true"></span>
-    <span class="hand-control-label">hand</span>
-  </button>
+  <footer class="command-bar">
+    <div class="command-note"><span aria-hidden="true">✧</span><span>WHERE KNOWLEDGE<br><strong>BECOMES WONDER</strong></span></div>
+    <div class="command-actions">
+      <button id="newPackButton" class="action-button" type="button" aria-label="New Pack · 새 카드팩 준비"><span class="button-icon"><svg aria-hidden="true"><use href="#icon-cards"/></svg></span><span>New Pack<small>새로운 발견을 시작하세요</small></span><span class="button-arrow" aria-hidden="true">↗</span></button>
+      <button id="handControlButton" class="hand-control-button" type="button" aria-pressed="false" aria-label="Hand · 손 인식 카메라 켜기"><svg aria-hidden="true"><use href="#icon-hand"/></svg><span><span class="hand-control-label">Hand</span><small id="handControlState">손으로 조작하기</small></span><span class="hand-control-dot" aria-hidden="true"></span></button>
+    </div>
+    <span class="command-edition">MATHEMATICA <span>·</span> VOL. I</span>
+  </footer>
   <div id="handStatus" class="hand-status" role="status" aria-live="polite"></div>
   <video id="handCamera" class="hand-camera" autoplay muted playsinline aria-hidden="true"></video>
   <div id="handCursor" class="hand-cursor" aria-hidden="true"></div>
@@ -207,8 +230,8 @@
     </article>
   </template>
 
-  <script src="script.js?v=20261031-6"></script>
-  <script type="module" src="hand-tracking.js?v=20260910-4"></script>
+  <script src="script.js?v=20261031-8"></script>
+  <script type="module" src="hand-tracking.js?v=20261031-8"></script>
 </body>
 </html>
 

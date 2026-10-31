@@ -1052,6 +1052,7 @@ function renderCatalog() {
         });
 
     grid.replaceChildren(...cards);
+    updateStats();
     if (emptyState) {
         emptyState.classList.add("hidden");
     }
@@ -1222,7 +1223,36 @@ function renderInventory() {
 }
 
 function updateStats() {
+    const ownedIds = getOwnedFormulaIds();
+    const count = library.filter((formula) => formula && ownedIds.has(formula.id)).length;
+    const total = library.filter(Boolean).length;
+    const counter = document.getElementById("collectionCount");
+    if (counter) {
+        counter.replaceChildren(document.createTextNode(`${String(count).padStart(2, "0")} `));
+        const denominator = document.createElement("small");
+        denominator.textContent = `/ ${total}`;
+        counter.append(denominator);
+    }
+    const summary = document.getElementById("collectionSummary");
+    if (summary) summary.textContent = `발견한 공식 ${count} / ${total}`;
+    const progress = document.getElementById("collectionProgress");
+    if (progress) {
+        progress.style.width = `${total ? count / total * 100 : 0}%`;
+        progress.parentElement.setAttribute("aria-valuenow", count);
+        progress.parentElement.setAttribute("aria-valuemax", total);
+    }
     return getInventoryGroups();
+}
+
+function updateRitualUI(phase) {
+    const opening = phase === "opening";
+    const revealed = phase === "revealed";
+    document.querySelector(".pack-panel").classList.toggle("has-revealed", revealed);
+    const newPack = document.getElementById("newPackButton");
+    newPack.disabled = opening;
+    newPack.setAttribute("aria-busy", String(opening));
+    document.getElementById("ritualState").textContent = opening ? "THE SEAL IS BREAKING" : revealed ? "FIVE NEW WONDERS, NOW YOURS" : "AWAITING YOUR DISCOVERY";
+    document.getElementById("ritualHint").textContent = opening ? "봉인이 풀리고 있습니다…" : revealed ? "카드를 두 번 눌러 발견에 담긴 이야기를 만나보세요" : "팩 상단을 오른쪽으로 드래그하거나 눌러 봉인을 해제하세요";
 }
 
 function setRipInstructions(text) {
@@ -1490,10 +1520,11 @@ function resetPackUI() {
 }
 
 function prepareNewPack() {
-    if (state.isOpening) return;
+    if (state.isOpening || state.isSnappingOpen) return;
     state.pendingPack = createPack();
     state.ripProgress = 0;
     resetPackUI();
+    updateRitualUI("ready");
     setRipInstructions("");
 }
 
@@ -1561,11 +1592,13 @@ function revealPack(cards) {
     document.getElementById("revealMessage").textContent = "";
     setRipInstructions("");
     state.isOpening = false;
+    updateRitualUI("revealed");
 }
 
 function openPack() {
     if (!state.pendingPack.length || state.isOpening) return;
     state.isOpening = true;
+    updateRitualUI("opening");
 
     const cardStage = document.getElementById("cardStage");
     const packButton = document.getElementById("ripPackButton");
@@ -1603,6 +1636,7 @@ function snapOpenPack() {
     if (state.isOpening || state.isSnappingOpen || state.ripProgress < RIP_SNAP_THRESHOLD) return;
     const packButton = document.getElementById("ripPackButton");
     state.isSnappingOpen = true;
+    updateRitualUI("opening");
     packButton.style.pointerEvents = "none";
     packButton.classList.add("is-snapping-open");
     const startedAt = performance.now();
