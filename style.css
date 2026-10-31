@@ -2188,6 +2188,53 @@ body::after {
         bottom: calc(min(164px, 42vw) * 0.75 + 24px);
         max-width: min(300px, calc(100vw - 24px));
     }
+
+    /* Mobile pack opening: a smaller pack sitting higher on the stage, and a
+       tighter fan whose outer cards stay inside the screen. */
+    .booster-pack {
+        width: min(41vw, 165px, calc((100svh - 235px) * 0.42));
+        translate: -50% calc(-50% - 36px);
+    }
+
+    .spread-card {
+        top: calc(50% - 30px);
+        width: min(25vw, 104px);
+    }
+
+    .spread-card.card-slot-0-5 { --tx: -21vw; --ty: 12px; --rot: -14deg; }
+    .spread-card.card-slot-1-5 { --tx: -10.5vw; --ty: -4px; --rot: -7deg; }
+    .spread-card.card-slot-2-5 { --tx: 0px; --ty: -12px; --rot: 0deg; }
+    .spread-card.card-slot-3-5 { --tx: 10.5vw; --ty: -4px; --rot: 7deg; }
+    .spread-card.card-slot-4-5 { --tx: 21vw; --ty: 12px; --rot: 14deg; }
+
+    .spread-card.card-slot-0 { --tx: -16vw; --ty: 6px; --rot: -11deg; }
+    .spread-card.card-slot-1 { --tx: -5.5vw; --ty: -8px; --rot: -4deg; }
+    .spread-card.card-slot-2 { --tx: 5.5vw; --ty: -8px; --rot: 4deg; }
+    .spread-card.card-slot-3 { --tx: 16vw; --ty: 6px; --rot: 11deg; }
+
+    /* Collected cards: three small cards per row. */
+    .catalog-panel .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .legend-row { gap: 5px; }
+    .legend-row .rarity-chip {
+        padding: 4px 8px;
+        font-size: 0.6rem;
+    }
+
+    .inventory-grid,
+    .catalog-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    /* Card details: a smaller card so the description is visible sooner. */
+    .card-modal-layout { padding: 56px 18px 24px; gap: 18px; }
+    .card-modal-visual { padding-block: 18px; }
+    .modal-card-3d { max-width: 170px; }
 }
 
 body.is-opening-page {
