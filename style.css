@@ -2283,19 +2283,20 @@ body::after {
        tighter fan whose outer cards stay inside the screen. */
     .booster-pack {
         width: min(54vw, 220px, calc((100svh - 235px) * 0.56));
-        translate: -50% calc(-50% - 8px);
+        translate: -50% calc(-50% + 20px);
     }
 
+    /* Sized so the outer cards still clear the screen edge by 16px at 360px wide. */
     .spread-card {
-        top: calc(50% - 30px);
-        width: min(28vw, 118px);
+        top: calc(50% - 12px);
+        width: min(33vw, 140px);
     }
 
-    .spread-card.card-slot-0-5 { --tx: -22vw; --ty: 12px; --rot: -13deg; }
-    .spread-card.card-slot-1-5 { --tx: -11vw; --ty: -4px; --rot: -6.5deg; }
+    .spread-card.card-slot-0-5 { --tx: -21vw; --ty: 12px; --rot: -11deg; }
+    .spread-card.card-slot-1-5 { --tx: -10.5vw; --ty: -4px; --rot: -5.5deg; }
     .spread-card.card-slot-2-5 { --tx: 0px; --ty: -12px; --rot: 0deg; }
-    .spread-card.card-slot-3-5 { --tx: 11vw; --ty: -4px; --rot: 6.5deg; }
-    .spread-card.card-slot-4-5 { --tx: 22vw; --ty: 12px; --rot: 13deg; }
+    .spread-card.card-slot-3-5 { --tx: 10.5vw; --ty: -4px; --rot: 5.5deg; }
+    .spread-card.card-slot-4-5 { --tx: 21vw; --ty: 12px; --rot: 11deg; }
 
     .spread-card.card-slot-0 { --tx: -16vw; --ty: 6px; --rot: -11deg; }
     .spread-card.card-slot-1 { --tx: -5.5vw; --ty: -8px; --rot: -4deg; }
