@@ -609,8 +609,23 @@ body::after {
     transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.4s ease;
     z-index: 10;
     box-shadow: none;
-    filter: drop-shadow(-12px 20px 24px rgba(0, 0, 0, 0.42));
+    /* No filter here or on .pack-top: mobile WebKit clips a filtered element's
+       contents to its box, which cut off the strip as it lifted above the pack.
+       The shadow is drawn by ::after instead. */
     touch-action: none;
+}
+
+.booster-pack::after {
+    content: "";
+    position: absolute;
+    inset: 6% 8% 2%;
+    z-index: -3;
+    border-radius: 6%;
+    background: rgba(0, 0, 0, 0.5);
+    filter: blur(22px);
+    transform: translate(-12px, 20px);
+    transition: background 0.4s ease, transform 0.4s ease;
+    pointer-events: none;
 }
 
 .booster-pack:active {
@@ -631,8 +646,9 @@ body::after {
     animation: packShake 0.26s ease-out both;
 }
 
-.booster-pack.is-snapping-open {
-    filter: drop-shadow(0 30px 38px rgba(117, 92, 228, 0.34));
+.booster-pack.is-snapping-open::after {
+    background: rgba(117, 92, 228, 0.42);
+    transform: translate(0, 30px);
 }
 
 .booster-pack.is-opened {
@@ -660,6 +676,9 @@ body::after {
     position: absolute;
     inset: 0;
     pointer-events: none;
+}
+
+.tear-segment-art {
     filter: saturate(0.98) contrast(1.01);
 }
 
@@ -2263,8 +2282,8 @@ body::after {
     /* Mobile pack opening: a smaller pack sitting higher on the stage, and a
        tighter fan whose outer cards stay inside the screen. */
     .booster-pack {
-        width: min(48vw, 195px, calc((100svh - 235px) * 0.5));
-        translate: -50% calc(-50% - 36px);
+        width: min(54vw, 220px, calc((100svh - 235px) * 0.56));
+        translate: -50% calc(-50% - 8px);
     }
 
     .spread-card {

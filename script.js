@@ -1754,13 +1754,14 @@ function bindEvents() {
 // scans the QR code right after a deploy can get the old page. Compare with the
 // live page and, if it has moved on, reload once under a cache-busting URL.
 function reloadIfOutdated() {
-    const current = document.querySelector('script[src^="script.js"]')?.getAttribute("src");
+    const assetVersions = (source) => [...source.matchAll(/(?:style\.css|script\.js)\?v=([\w-]+)/g)].map((m) => m[1]).join("_");
+    const current = assetVersions(document.head.innerHTML + document.body.innerHTML);
     if (!current) return;
     fetch(location.pathname, { cache: "no-store" })
         .then((response) => (response.ok ? response.text() : ""))
         .then((html) => {
-            const live = html.match(/src="script\.js\?v=([^"]+)"/)?.[1];
-            if (!live || current === `script.js?v=${live}`) return;
+            const live = assetVersions(html);
+            if (!live || current === live) return;
             const url = new URL(location.href);
             if (url.searchParams.get("fresh") === live) return; // already reloaded once
             url.searchParams.set("fresh", live);
