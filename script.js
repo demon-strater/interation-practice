@@ -1750,7 +1750,27 @@ function bindEvents() {
     bindModalEvents();
 }
 
+// GitHub Pages lets phones cache index.html for 10 minutes, so a visitor who
+// scans the QR code right after a deploy can get the old page. Compare with the
+// live page and, if it has moved on, reload once under a cache-busting URL.
+function reloadIfOutdated() {
+    const current = document.querySelector('script[src^="script.js"]')?.getAttribute("src");
+    if (!current) return;
+    fetch(location.pathname, { cache: "no-store" })
+        .then((response) => (response.ok ? response.text() : ""))
+        .then((html) => {
+            const live = html.match(/src="script\.js\?v=([^"]+)"/)?.[1];
+            if (!live || current === `script.js?v=${live}`) return;
+            const url = new URL(location.href);
+            if (url.searchParams.get("fresh") === live) return; // already reloaded once
+            url.searchParams.set("fresh", live);
+            location.replace(url);
+        })
+        .catch(() => {});
+}
+
 function init() {
+    reloadIfOutdated();
     // Render immediately from bundled assets. Remote artwork discovery must
     // never block pack interaction or the collected-card catalog.
     applyPackArtwork([]);
